@@ -12,7 +12,8 @@ export const allArtworksQuery = `
     category,
     description_fr,
     description_en,
-    "imageUrl": image.asset->url,
+    "images": images[].asset->url,
+    "imageUrl": images[0].asset->url,
     available,
     price_indication,
     date_created
@@ -33,7 +34,8 @@ export const artworksByCategoryQuery = `
     category,
     description_fr,
     description_en,
-    "imageUrl": image.asset->url,
+    "images": images[].asset->url,
+    "imageUrl": images[0].asset->url,
     available,
     price_indication,
     date_created
@@ -55,7 +57,8 @@ export const artworkBySlugOrIdQuery = `
     category,
     description_fr,
     description_en,
-    "imageUrl": image.asset->url,
+    "images": images[].asset->url,
+    "imageUrl": images[0].asset->url,
     available,
     price_indication,
     date_created
