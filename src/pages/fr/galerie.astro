@@ -12,7 +12,7 @@ interface Artwork {
   description_fr?: string;
   imageUrl?: string;
   price_indication?: string;
-  available?: boolean;
+  status?: 'available' | 'display_only' | 'sold';
 }
 
 let artworks: Artwork[] = [];
@@ -53,6 +53,7 @@ try {
               category={artwork.category}
               description={artwork.description_fr}
               imageUrl={artwork.imageUrl}
+              status={artwork.status}
               price={artwork.price_indication}
               href={`/fr/galerie/${artwork.slug ?? artwork._id}`}
             />
@@ -114,16 +115,31 @@ try {
   const chips = document.querySelectorAll<HTMLButtonElement>('.chip');
   const grid  = document.getElementById('gallery-grid');
 
+  function applyFilter(filter: string) {
+    grid?.querySelectorAll<HTMLElement>('[data-cat]').forEach(card => {
+      const match = filter === 'all' || card.dataset.cat === filter;
+      card.style.display = match ? '' : 'none';
+    });
+  }
+
   chips.forEach(chip => {
     chip.addEventListener('click', () => {
       chips.forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
-
-      const filter = chip.dataset.filter ?? 'all';
-      grid?.querySelectorAll<HTMLElement>('[data-cat]').forEach(card => {
-        const match = filter === 'all' || card.dataset.cat === filter;
-        card.style.display = match ? '' : 'none';
-      });
+      applyFilter(chip.dataset.filter ?? 'all');
     });
   });
+
+  // Arriving from the homepage's "Trois savoir-faire" cards (e.g.
+  // /fr/galerie?category=pottery) pre-selects the matching chip instead of
+  // always landing on "Tout".
+  const requestedCategory = new URLSearchParams(window.location.search).get('category');
+  const matchingChip = requestedCategory
+    ? Array.from(chips).find(c => c.dataset.filter === requestedCategory)
+    : undefined;
+  if (matchingChip) {
+    chips.forEach(c => c.classList.remove('active'));
+    matchingChip.classList.add('active');
+    applyFilter(requestedCategory!);
+  }
 </script>

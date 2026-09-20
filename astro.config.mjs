@@ -30,5 +30,22 @@ export default defineConfig({
     inlineStylesheets: 'never',
   },
 
+  // Phase 7 fix: same class of bug as the inlineStylesheets setting above,
+  // but for JS. Astro inlines a page's <script> as a literal <script
+  // type="module"> block (no src) when the compiled chunk is standalone and
+  // under Vite's assetsInlineLimit (default 4096 bytes) — verified by
+  // reading node_modules/astro/dist/core/build/plugins/plugin-scripts.js.
+  // Both the gallery filter script and the artwork-photo thumbnail script
+  // are well under that limit, so they were being inlined and silently
+  // dropped by the CSP's script-src 'self' (no 'unsafe-inline') — the
+  // scripts never even threw a visible console error, they just never ran.
+  // assetsInlineLimit: 0 forces every script (and other asset) to its own
+  // same-origin file instead, which 'self' already allows.
+  vite: {
+    build: {
+      assetsInlineLimit: 0,
+    },
+  },
+
   output: 'static',
 });

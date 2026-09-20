@@ -4,6 +4,7 @@
 // When not provided: shows a colour-tinted placeholder (category-based).
 
 type Category = 'pottery' | 'stained-glass' | 'wire-sculpture';
+type Status = 'available' | 'display_only' | 'sold';
 
 interface Props {
   title: string;
@@ -13,6 +14,7 @@ interface Props {
   imageAlt?: string;
   price?: string;
   href?: string;
+  status?: Status;
 }
 
 const {
@@ -23,7 +25,16 @@ const {
   imageAlt = title,
   price,
   href = '#',
+  status,
 } = Astro.props;
+
+// No badge for the normal "available" case — only flag the two statuses
+// that change what a visitor should expect (can't buy it / already gone).
+const statusLabels: Partial<Record<Status, string>> = {
+  display_only: 'Exposition uniquement',
+  sold: 'Déjà vendue',
+};
+const statusLabel = status ? statusLabels[status] : undefined;
 
 const categoryLabels: Record<Category, string> = {
   pottery:         'Céramique',
@@ -47,6 +58,7 @@ const srcUrl = imageUrl ? `${imageUrl}?w=600&h=450&fit=crop&auto=format` : null;
   )}
   <div class="cb">
     <span class="badge">{categoryLabels[category]}</span>
+    {statusLabel && <span class="badge status">{statusLabel}</span>}
     <h3><a href={href}>{title}</a></h3>
     {description && <p>{description}</p>}
     {price && <div class="cprice">{price}</div>}
@@ -85,6 +97,7 @@ const srcUrl = imageUrl ? `${imageUrl}?w=600&h=450&fit=crop&auto=format` : null;
 
   /* Card body */
   .cb  { padding: 1rem 1.15rem 1.3rem; }
+  .badge.status { background: var(--border); color: var(--text); margin-left: 0.4rem; }
   h3   { font-size: 1.15rem; margin-bottom: 0.3rem; }
   h3 a { color: inherit; }
   h3 a:hover { color: var(--accent); }

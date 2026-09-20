@@ -21,6 +21,15 @@ export const sanityClient = createClient({
   projectId: projectId ?? 'placeholder',
   dataset,
   apiVersion: '2024-01-01', // Pinned — safe to advance after Phase 4
-  useCdn: true,             // Read from Sanity's global CDN (faster, cached)
+  // Phase 7 fix: useCdn was true, reading from Sanity's cached API CDN.
+  // That CDN is meant for high-traffic browser reads, not one-shot static
+  // builds — Sanity's own docs say so explicitly ("For static builds, the
+  // live uncached API is a better fit to ensure you get the latest
+  // content"). With useCdn:true, a build triggered right after mum or
+  // Quentin publishes an edit could still read the CDN's not-yet-invalidated
+  // cached response and bake stale content into the static site — which is
+  // what happened to an artwork's photos here. false always hits the direct
+  // API, so every build reflects exactly what's published in Sanity.
+  useCdn: false,
   token: apiToken,          // Read-only token; never use a write token here
 });

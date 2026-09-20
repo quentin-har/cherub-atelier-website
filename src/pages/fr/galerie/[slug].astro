@@ -12,7 +12,7 @@ interface Artwork {
   imageUrl?: string;
   images?: string[];
   price_indication?: string;
-  available?: boolean;
+  status?: 'available' | 'display_only' | 'sold';
 }
 
 // One static page per artwork, generated at build time (no server, no
@@ -44,6 +44,13 @@ const categoryLabels: Record<Artwork['category'], string> = {
   'stained-glass': 'Vitrail',
   'wire-sculpture': 'Fil de Fer',
 };
+
+// No badge for the normal "available" case, same as the gallery card.
+const statusLabels: Partial<Record<NonNullable<Artwork['status']>, string>> = {
+  display_only: 'Exposition uniquement',
+  sold: 'Déjà vendue',
+};
+const statusLabel = artwork.status ? statusLabels[artwork.status] : undefined;
 
 // Full, uncropped images for the detail view (gallery cards crop to 4:3;
 // here we show the whole piece, capped at a sensible max width). Falls back
@@ -81,7 +88,7 @@ const fullImageUrl = fullImageUrls[0] ?? null;
       <div class="detail-info">
         <div class="badges">
           <span class="badge">{categoryLabels[artwork.category]}</span>
-          {artwork.available === false && <span class="badge unavailable">Déjà vendue</span>}
+          {statusLabel && <span class="badge unavailable">{statusLabel}</span>}
         </div>
         <h1>{artwork.title_fr}</h1>
         {artwork.description_fr && <p class="desc">{artwork.description_fr}</p>}
