@@ -1,8 +1,33 @@
 ---
-// À propos — generic placeholder page (Phase 7). Full personal copy about
-// the artist's journey is intentionally left for mum to write herself,
-// same as the artwork descriptions in Sanity. See PLAN.md/MUM_TODO.md.
+// À propos — content now lives in Sanity as a singleton document (fixed
+// id 'aboutPage', see studio/schemaTypes/aboutPage.ts) so mum can edit her
+// own bio in Studio. Falls back to the original generic placeholder if the
+// document doesn't exist yet or Sanity isn't configured, so the page never
+// breaks.
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { sanityClient } from '../../lib/sanity';
+import { aboutPageQuery } from '../../lib/queries';
+
+interface AboutPage {
+  bio_fr?: string;
+  bio_en?: string;
+  photoUrl?: string;
+}
+
+const FALLBACK_BIO =
+  "Je suis une artisane passionnée, attachée au travail fait main sous toutes ses formes : " +
+  "la céramique, le vitrail et la sculpture sur fil de fer. Chaque pièce naît d'un geste " +
+  "patient, pensée et façonnée avec soin, une matière à la fois.";
+
+let about: AboutPage | null = null;
+try {
+  about = await sanityClient.fetch(aboutPageQuery);
+} catch {
+  // Sanity not configured yet, or document doesn't exist — fall back below.
+}
+
+const bio = about?.bio_fr?.trim() || FALLBACK_BIO;
+const showComingSoonNote = !about?.bio_fr?.trim();
 ---
 
 <BaseLayout
@@ -14,15 +39,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     <div class="wrap content center">
       <p class="eyebrow">À propos</p>
       <h1>Mon atelier</h1>
-      <p class="lead">
-        Je suis une artisane passionnée, attachée au travail fait main sous toutes ses formes :
-        la céramique, le vitrail et la sculpture sur fil de fer. Chaque pièce naît d'un geste
-        patient, pensée et façonnée avec soin, une matière à la fois.
-      </p>
-      <p class="note">
-        Cette page est encore en construction — mon parcours et l'histoire de l'atelier
-        arrivent très prochainement. Merci de votre visite&nbsp;!
-      </p>
+      {about?.photoUrl && (
+        <img class="portrait" src={about.photoUrl} alt="" loading="lazy" />
+      )}
+      <p class="lead" set:text={bio} />
+      {showComingSoonNote && (
+        <p class="note">
+          Cette page est encore en construction — mon parcours et l'histoire de
+          l'atelier arrivent très prochainement. Merci de votre visite&nbsp;!
+        </p>
+      )}
     </div>
   </section>
 </BaseLayout>
@@ -30,7 +56,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <style>
   .content { max-width: 640px; margin: 0 auto; }
   h1 { font-size: clamp(1.9rem, 4.4vw, 2.7rem); margin: 0.4rem 0 1.4rem; }
-  .lead { font-size: 1.05rem; opacity: 0.88; line-height: 1.75; }
+  .portrait {
+    width: 220px;
+    height: 220px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    margin: 0 auto 1.6rem;
+  }
+  .lead { font-size: 1.05rem; opacity: 0.88; line-height: 1.75; white-space: pre-line; }
   .note {
     margin-top: 2rem;
     font-size: 0.88rem;

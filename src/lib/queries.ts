@@ -64,3 +64,13 @@ export const artworkBySlugOrIdQuery = `
     date_created
   }
 `;
+
+// The singleton À propos document (fixed document ID, see
+// studio/sanity.config.ts). Direct id lookup, not a type filter.
+export const aboutPageQuery = `
+  *[_id == "aboutPage"][0] {
+    bio_fr,
+    bio_en,
+    "photoUrl": photo.asset->url
+  }
+`;
