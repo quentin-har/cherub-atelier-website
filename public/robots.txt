@@ -1,6 +1,4 @@
-# Robots — noindex during development and soft launch
-# Phase 7: remove the Disallow line once the site is ready for the public
 User-agent: *
-Disallow: /
+Allow: /
 
-Sitemap: https://placeholder.netlify.app/sitemap-index.xml
+Sitemap: https://cherub-atelier.netlify.app/sitemap-index.xml
