@@ -1,0 +1,40 @@
+---
+// À propos — generic placeholder page (Phase 7). Full personal copy about
+// the artist's journey is intentionally left for mum to write herself,
+// same as the artwork descriptions in Sanity. See PLAN.md/MUM_TODO.md.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Cherub Atelier — À propos"
+  description="Découvrez l'atelier derrière Cherub Atelier : céramique, vitrail et sculpture sur fil de fer, fait main."
+  lang="fr"
+>
+  <section class="section">
+    <div class="wrap content center">
+      <p class="eyebrow">À propos</p>
+      <h1>Mon atelier</h1>
+      <p class="lead">
+        Je suis une artisane passionnée, attachée au travail fait main sous toutes ses formes :
+        la céramique, le vitrail et la sculpture sur fil de fer. Chaque pièce naît d'un geste
+        patient, pensée et façonnée avec soin, une matière à la fois.
+      </p>
+      <p class="note">
+        Cette page est encore en construction — mon parcours et l'histoire de l'atelier
+        arrivent très prochainement. Merci de votre visite&nbsp;!
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .content { max-width: 640px; margin: 0 auto; }
+  h1 { font-size: clamp(1.9rem, 4.4vw, 2.7rem); margin: 0.4rem 0 1.4rem; }
+  .lead { font-size: 1.05rem; opacity: 0.88; line-height: 1.75; }
+  .note {
+    margin-top: 2rem;
+    font-size: 0.88rem;
+    opacity: 0.65;
+    font-style: italic;
+  }
+</style>

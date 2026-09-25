@@ -1,0 +1,24 @@
+---
+// English "About" — stub until post-launch translation pass (Phase 8).
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Cherub Atelier — Coming soon" lang="en">
+  <section class="coming-soon">
+    <p class="eyebrow">Coming soon</p>
+    <h1>English version in progress</h1>
+    <p>The English translation of this page is on its way.</p>
+    <a class="btn" href="/fr/a-propos">→ Version française</a>
+  </section>
+</BaseLayout>
+
+<style>
+  .coming-soon {
+    text-align: center;
+    padding: 6rem 1.4rem;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); margin: 0.5rem 0 1rem; }
+  p  { opacity: 0.75; margin-bottom: 1.5rem; }
+</style>

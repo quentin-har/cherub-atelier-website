@@ -9,13 +9,15 @@ const base = `/${lang}`;
 const links =
   lang === 'fr'
     ? [
-        { href: `${base}/`,        label: 'Accueil' },
-        { href: `${base}/galerie`, label: 'Galerie' },
-        { href: `${base}/contact`, label: 'Contact' },
+        { href: `${base}/`,          label: 'Accueil' },
+        { href: `${base}/galerie`,   label: 'Galerie' },
+        { href: `${base}/a-propos`, label: 'À propos' },
+        { href: `${base}/contact`,   label: 'Contact' },
       ]
     : [
         { href: `${base}/`,        label: 'Home' },
         { href: `${base}/gallery`, label: 'Gallery' },
+        { href: `${base}/about`,   label: 'About' },
         { href: `${base}/contact`, label: 'Contact' },
       ];
 
