@@ -9,6 +9,7 @@ export const allArtworksQuery = `
     title_fr,
     title_en,
     "slug": slug.current,
+    "slug_en": slug_en.current,
     category,
     description_fr,
     description_en,
@@ -32,6 +33,7 @@ export const artworksByCategoryQuery = `
     title_fr,
     title_en,
     "slug": slug.current,
+    "slug_en": slug_en.current,
     category,
     description_fr,
     description_en,
@@ -48,14 +50,17 @@ export const artworksByCategoryQuery = `
 //   sanityClient.fetch(artworksByCategoryQuery, { category: 'pottery' })
 
 // A single artwork by slug — used to build the detail page route.
-// Falls back to matching on _id so an artwork published before the slug
-// field existed still gets a working (if less pretty) detail page.
+// Matches either the French or English slug (a French page might be
+// reached via an English-slugged link, or vice versa) and falls back to
+// matching on _id so an artwork published before the slug field existed
+// still gets a working (if less pretty) detail page.
 export const artworkBySlugOrIdQuery = `
-  *[_type == "artwork" && (slug.current == $slug || _id == $slug)][0] {
+  *[_type == "artwork" && (slug.current == $slug || slug_en.current == $slug || _id == $slug)][0] {
     _id,
     title_fr,
     title_en,
     "slug": slug.current,
+    "slug_en": slug_en.current,
     category,
     description_fr,
     description_en,

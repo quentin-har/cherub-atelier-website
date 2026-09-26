@@ -8,6 +8,7 @@ interface Artwork {
   title_fr: string;
   title_en?: string;
   slug?: string;
+  slug_en?: string;
   category: 'pottery' | 'stained-glass' | 'wire-sculpture';
   description_fr?: string;
   description_en?: string;
@@ -32,7 +33,10 @@ export async function getStaticPaths() {
   }
 
   return artworks.map((artwork) => ({
-    params: { slug: artwork.slug ?? artwork._id },
+    // English-specific slug, falling back to the French slug then the raw
+    // Sanity _id — same fallback chain used for title/description below,
+    // so an artwork never ends up with no working English URL.
+    params: { slug: artwork.slug_en ?? artwork.slug ?? artwork._id },
     props: { artwork },
   }));
 }

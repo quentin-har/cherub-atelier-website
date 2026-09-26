@@ -12,6 +12,7 @@ interface Artwork {
   title_fr: string;
   title_en?: string;
   slug?: string;
+  slug_en?: string;
   category: 'pottery' | 'stained-glass' | 'wire-sculpture';
   description_fr?: string;
   description_en?: string;
@@ -36,6 +37,11 @@ try {
 // English page when no description exists yet.
 const titleOf = (a: Artwork) => a.title_en?.trim() || a.title_fr;
 const descriptionOf = (a: Artwork) => a.description_en?.trim() || undefined;
+// English-specific slug (mum can set this once she's translated a title).
+// Falls back to the French slug, then the raw Sanity _id, same fallback
+// chain used for the title/description above — an artwork never ends up
+// with no working English URL.
+const hrefOf = (a: Artwork) => `/en/gallery/${a.slug_en ?? a.slug ?? a._id}`;
 
 // Group real photos by category for the "Three crafts" cards below
 // (CategoryShowcase.astro falls back to the colour placeholder on its own
@@ -62,7 +68,7 @@ const showcaseImages = {
   <!-- ── Hero ── -->
   <section class="hero">
     <p class="eyebrow">Handmade art studio</p>
-    <h1>Playing with <em>materials</em>,<br>colour and light</h1>
+    <h1>Crafting with <em>materials</em>,<br>colour and light</h1>
     <p class="hero-sub">
       Pottery, Stained Glass and Wire Sculpture.<br>
       Every piece from Cherub Atelier is unique, handcrafted.
@@ -121,7 +127,7 @@ const showcaseImages = {
             imageUrl={artwork.imageUrl}
             status={artwork.status}
             price={artwork.price_indication}
-            href={`/en/gallery/${artwork.slug ?? artwork._id}`}
+            href={hrefOf(artwork)}
             lang="en"
           />
         ))}
@@ -135,7 +141,7 @@ const showcaseImages = {
   <!-- ── Quote ── -->
   <section class="quote-section">
     <blockquote>
-      &ldquo;&nbsp;Playing with materials, colour and light.&nbsp;&rdquo;
+      &ldquo;&nbsp;Crafting with materials, colour and light.&nbsp;&rdquo;
       <span class="sig">Cherub Atelier</span>
     </blockquote>
   </section>
