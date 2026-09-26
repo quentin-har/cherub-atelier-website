@@ -5,6 +5,28 @@
 [build.environment]
   NODE_VERSION = "22"
 
+# Phase 8 -- redirect the secondary domain to the primary one.
+# cherub-atelier.fr is the primary domain in Netlify; cherub-atelier.com is
+# added as a domain alias (LAUNCH_CHECKLIST.md Phase 8-A/B). Netlify domain
+# aliases serve identical content with NO automatic redirect by default
+# (confirmed against Netlify's own docs, 2026-09-26) -- without this rule,
+# Google would see the same content live at two domains and have to guess
+# which is canonical, which can dilute search ranking. Placed BEFORE the
+# root redirect below on purpose: Netlify takes the first matching rule,
+# and the hostless "from = /" rule would otherwise fire first even for
+# .com requests, rewriting the path but leaving the visitor on .com.
+# Mum has final say on which domain is primary -- see MUM_TODO.md's
+# "Le nom de l'adresse du site" section. If she picks .com instead, swap
+# the two domains below; for no redirect at all, delete this block.
+# Full reasoning: PLAN.md SS16. Does nothing until DNS actually points
+# .com at Netlify (Phase 8-B) -- Force HTTPS (site-wide, Phase 8-B) covers
+# the http-to-https case, no separate rule needed for that.
+[[redirects]]
+  from = "https://cherub-atelier.com/*"
+  to = "https://cherub-atelier.fr/:splat"
+  status = 301
+  force = true
+
 # Redirect root to French homepage
 [[redirects]]
   from = "/"
