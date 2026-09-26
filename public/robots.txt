@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://cherub-atelier.netlify.app/sitemap-index.xml
+Sitemap: https://cherub-atelier.fr/sitemap-index.xml

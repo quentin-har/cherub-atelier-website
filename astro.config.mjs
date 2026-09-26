@@ -9,7 +9,16 @@ export default defineConfig({
   // canonical. Now matches the actual primary domain set in Phase 8-B.
   site: 'https://cherub-atelier.fr',
 
-  integrations: [sitemap()],
+  integrations: [
+    sitemap({
+      // Exclude the contact form's thank-you pages: a visitor only lands
+      // here mid-flow, they add no search value, and indexing them risks
+      // a stray "Merci !" / "Thank you" page showing up in results for a
+      // query it was never meant to answer. Resolves the open, non-blocking
+      // item noted in LAUNCH_CHECKLIST.md's Phase 8-I.
+      filter: (page) => !page.includes('/merci'),
+    }),
+  ],
 
   i18n: {
     defaultLocale: 'fr',

@@ -73,9 +73,29 @@ const statusLabel = artwork.status ? statusLabels[artwork.status] : undefined;
 const rawImageUrls = artwork.images?.length ? artwork.images : artwork.imageUrl ? [artwork.imageUrl] : [];
 const fullImageUrls = rawImageUrls.map((url) => `${url}?w=1400&fit=max&auto=format`);
 const fullImageUrl = fullImageUrls[0] ?? null;
+
+// SEO (2026-09-26): same fallback as the French route (see its comment) --
+// use the artwork's own English description once one exists, a templated
+// title+category fallback until then, and never the literal "Details
+// later" placeholder text.
+const PLACEHOLDER_DESCRIPTIONS = ['Détails à venir', 'Details later'];
+const hasRealDescriptionEn =
+  !!artwork.description_en?.trim() &&
+  !PLACEHOLDER_DESCRIPTIONS.includes(artwork.description_en.trim());
+const seoDescription = hasRealDescriptionEn
+  ? artwork.description_en!.trim()
+  : `${title} — handmade ${categoryLabels[artwork.category].toLowerCase()} by Cherub Atelier.`;
+const ogImage = artwork.imageUrl
+  ? `${artwork.imageUrl}?w=1200&h=630&fit=crop&auto=format`
+  : undefined;
 ---
 
-<BaseLayout title={`Cherub Atelier — ${title}`} lang="en">
+<BaseLayout
+  title={`Cherub Atelier — ${title}`}
+  description={seoDescription}
+  lang="en"
+  image={ogImage}
+>
   <section class="section wrap">
     <a class="back" href="/en/gallery">&larr; Back to the gallery</a>
 

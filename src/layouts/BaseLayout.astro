@@ -7,13 +7,33 @@ interface Props {
   title: string;
   description?: string;
   lang?: string;
+  // Absolute or Sanity CDN image URL for social sharing previews
+  // (og:image / twitter:image). Optional -- pages with no natural image
+  // (contact, mentions légales, merci) simply omit it rather than share a
+  // generic placeholder that doesn't exist as a real asset.
+  image?: string;
 }
 
 const {
   title,
   description = 'Cherub Atelier — Céramique, Vitrail et Fil de Fer, fait main.',
   lang = 'fr',
+  image,
 } = Astro.props;
+
+// SEO (2026-09-26): canonical tag built from Astro.site (the primary
+// cherub-atelier.fr domain, set in astro.config.mjs) plus the current
+// path, regardless of which host actually served the request. This is
+// the cheap fix for a real duplicate-content risk the site already has:
+// the same content is reachable at cherub-atelier.fr, cherub-atelier.com
+// (redirects, but only help a crawler that follows them),
+// www.cherub-atelier.{fr,com}, and the original cherub-atelier.netlify.app
+// subdomain, which Netlify keeps serving even with a custom domain
+// attached. A canonical tag tells search engines which one to index
+// without needing every one of those individually locked down.
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const ogLocale = lang === 'fr' ? 'fr_FR' : 'en_US';
+const absoluteImage = image ? new URL(image, Astro.site).href : undefined;
 ---
 <!doctype html>
 <html lang={lang}>
@@ -21,8 +41,23 @@ const {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL.href} />
     <title>{title}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Open Graph / social sharing previews -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Cherub Atelier" />
+    <meta property="og:locale" content={ogLocale} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL.href} />
+    {absoluteImage && <meta property="og:image" content={absoluteImage} />}
+
+    <meta name="twitter:card" content={absoluteImage ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {absoluteImage && <meta name="twitter:image" content={absoluteImage} />}
   </head>
   <body>
     <Header lang={lang} />

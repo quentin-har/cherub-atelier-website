@@ -59,9 +59,32 @@ const statusLabel = artwork.status ? statusLabels[artwork.status] : undefined;
 const rawImageUrls = artwork.images?.length ? artwork.images : artwork.imageUrl ? [artwork.imageUrl] : [];
 const fullImageUrls = rawImageUrls.map((url) => `${url}?w=1400&fit=max&auto=format`);
 const fullImageUrl = fullImageUrls[0] ?? null;
+
+// SEO (2026-09-26): use the artwork's own description as this page's meta
+// description once mum has written one, instead of every artwork sharing
+// the same site-wide default. All 9 artworks currently still hold the
+// placeholder text ("Détails à venir") -- detected and skipped here so the
+// placeholder itself never leaks into search results; a templated
+// title+category fallback is used until she replaces it. No code change
+// needed when she does -- this starts picking up the real text on its own.
+const PLACEHOLDER_DESCRIPTIONS = ['Détails à venir', 'Details later'];
+const hasRealDescriptionFr =
+  !!artwork.description_fr?.trim() &&
+  !PLACEHOLDER_DESCRIPTIONS.includes(artwork.description_fr.trim());
+const seoDescription = hasRealDescriptionFr
+  ? artwork.description_fr!.trim()
+  : `${artwork.title_fr} — pièce de ${categoryLabels[artwork.category].toLowerCase()} faite main par Cherub Atelier.`;
+const ogImage = artwork.imageUrl
+  ? `${artwork.imageUrl}?w=1200&h=630&fit=crop&auto=format`
+  : undefined;
 ---
 
-<BaseLayout title={`Cherub Atelier — ${artwork.title_fr}`} lang="fr">
+<BaseLayout
+  title={`Cherub Atelier — ${artwork.title_fr}`}
+  description={seoDescription}
+  lang="fr"
+  image={ogImage}
+>
   <section class="section wrap">
     <a class="back" href="/fr/galerie">&larr; Retour à la galerie</a>
 
