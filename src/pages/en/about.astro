@@ -1,24 +1,74 @@
 ---
-// English "About" — stub until post-launch translation pass (Phase 8).
+// About — content lives in Sanity as a singleton document (fixed id
+// 'aboutPage', see studio/schemaTypes/aboutPage.ts) so mum can edit her own
+// bio in Studio. bio_en is optional there (she may only have written the
+// French version so far) — falls back to a generic English placeholder,
+// same pattern as the French page's own fallback, so the page never shows
+// mixed languages or breaks if Sanity isn't configured yet.
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { sanityClient } from '../../lib/sanity';
+import { aboutPageQuery } from '../../lib/queries';
+
+interface AboutPage {
+  bio_fr?: string;
+  bio_en?: string;
+  photoUrl?: string;
+}
+
+const FALLBACK_BIO =
+  'I am a passionate craftswoman, devoted to handmade work in all its forms: pottery, ' +
+  "stained glass and wire sculpture. Every piece is born from a patient gesture, thought " +
+  'through and shaped with care, one material at a time.';
+
+let about: AboutPage | null = null;
+try {
+  about = await sanityClient.fetch(aboutPageQuery);
+} catch {
+  // Sanity not configured yet, or document doesn't exist — fall back below.
+}
+
+const bio = about?.bio_en?.trim() || FALLBACK_BIO;
+const showComingSoonNote = !about?.bio_en?.trim();
 ---
 
-<BaseLayout title="Cherub Atelier — Coming soon" lang="en">
-  <section class="coming-soon">
-    <p class="eyebrow">Coming soon</p>
-    <h1>English version in progress</h1>
-    <p>The English translation of this page is on its way.</p>
-    <a class="btn" href="/fr/a-propos">→ Version française</a>
+<BaseLayout
+  title="Cherub Atelier — About"
+  description="Discover the studio behind Cherub Atelier: handmade pottery, stained glass and wire sculpture."
+  lang="en"
+>
+  <section class="section">
+    <div class="wrap content center">
+      <p class="eyebrow">About</p>
+      <h1>My studio</h1>
+      {about?.photoUrl && (
+        <img class="portrait" src={about.photoUrl} alt="" loading="lazy" />
+      )}
+      <p class="lead" set:text={bio} />
+      {showComingSoonNote && (
+        <p class="note">
+          This page is still under construction — my background and the studio's story
+          are coming very soon. Thank you for visiting!
+        </p>
+      )}
+    </div>
   </section>
 </BaseLayout>
 
 <style>
-  .coming-soon {
-    text-align: center;
-    padding: 6rem 1.4rem;
-    max-width: 480px;
-    margin: 0 auto;
+  .content { max-width: 640px; margin: 0 auto; }
+  h1 { font-size: clamp(1.9rem, 4.4vw, 2.7rem); margin: 0.4rem 0 1.4rem; }
+  .portrait {
+    width: 220px;
+    height: 220px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    margin: 0 auto 1.6rem;
   }
-  h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); margin: 0.5rem 0 1rem; }
-  p  { opacity: 0.75; margin-bottom: 1.5rem; }
+  .lead { font-size: 1.05rem; opacity: 0.88; line-height: 1.75; white-space: pre-line; }
+  .note {
+    margin-top: 2rem;
+    font-size: 0.88rem;
+    opacity: 0.65;
+    font-style: italic;
+  }
 </style>

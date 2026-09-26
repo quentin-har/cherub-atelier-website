@@ -7,66 +7,97 @@
 //   - required fields            → browser-side validation before submission
 // No server-side code, no database — submissions go straight to Netlify.
 //
-// action="/fr/merci" (Phase 8-C fix): without this, Netlify serves its own
-// generic, unstyled default success page after submission — it has no
-// access to this site's CSS at all, which is what looked broken/unstyled
-// to a visitor. Pointing action at a real page in this site (src/pages/fr/merci.astro,
-// wrapped in the normal BaseLayout) makes the confirmation page match the
-// rest of the site instead.
+// action={`/${lang}/merci`} (Phase 8-C fix, extended in Phase 8-F for the
+// English route): without this, Netlify serves its own generic, unstyled
+// default success page after submission — it has no access to this site's
+// CSS at all, which is what looked broken/unstyled to a visitor. Pointing
+// action at a real page in this site (src/pages/fr/merci.astro or
+// src/pages/en/merci.astro, both wrapped in the normal BaseLayout) makes
+// the confirmation page match the rest of the site instead.
+//
+// lang (Phase 8-F): this form is shared between the French and English
+// contact pages, so every visible string branches on it instead of being
+// hardcoded to French like the rest of the component used to be.
+interface Props {
+  lang?: 'fr' | 'en';
+}
+const { lang = 'fr' } = Astro.props;
+
+const copy = lang === 'fr'
+  ? {
+      honeypotLabel: 'Ne pas remplir ce champ : ',
+      name: 'Nom',
+      namePlaceholder: 'Votre nom',
+      email: 'Email',
+      emailPlaceholder: 'vous@exemple.fr',
+      message: 'Message',
+      messagePlaceholder: 'Votre message…',
+      submit: 'Envoyer',
+    }
+  : {
+      honeypotLabel: 'Do not fill in this field: ',
+      name: 'Name',
+      namePlaceholder: 'Your name',
+      email: 'Email',
+      emailPlaceholder: 'you@example.com',
+      message: 'Message',
+      messagePlaceholder: 'Your message…',
+      submit: 'Send',
+    };
 ---
 
 <form
   name="contact"
   method="POST"
-  action="/fr/merci"
+  action={`/${lang}/merci`}
   data-netlify="true"
   data-netlify-honeypot="bot-field"
   class="contact-form"
 >
   <!-- Honeypot: hidden from real users via CSS; bots fill it and get rejected -->
   <p class="hidden-field">
-    <label>Ne pas remplir ce champ : <input name="bot-field" /></label>
+    <label>{copy.honeypotLabel}<input name="bot-field" /></label>
   </p>
 
   <!-- Required by Netlify to identify the form in static output -->
   <input type="hidden" name="form-name" value="contact" />
 
   <div class="field">
-    <label for="cf-name">Nom <span aria-hidden="true">*</span></label>
+    <label for="cf-name">{copy.name} <span aria-hidden="true">*</span></label>
     <input
       type="text"
       id="cf-name"
       name="name"
       required
       autocomplete="name"
-      placeholder="Votre nom"
+      placeholder={copy.namePlaceholder}
     />
   </div>
 
   <div class="field">
-    <label for="cf-email">Email <span aria-hidden="true">*</span></label>
+    <label for="cf-email">{copy.email} <span aria-hidden="true">*</span></label>
     <input
       type="email"
       id="cf-email"
       name="email"
       required
       autocomplete="email"
-      placeholder="vous@exemple.fr"
+      placeholder={copy.emailPlaceholder}
     />
   </div>
 
   <div class="field">
-    <label for="cf-message">Message <span aria-hidden="true">*</span></label>
+    <label for="cf-message">{copy.message} <span aria-hidden="true">*</span></label>
     <textarea
       id="cf-message"
       name="message"
       required
       rows="6"
-      placeholder="Votre message…"
+      placeholder={copy.messagePlaceholder}
     ></textarea>
   </div>
 
-  <button type="submit" class="btn submit-btn">Envoyer</button>
+  <button type="submit" class="btn submit-btn">{copy.submit}</button>
 </form>
 
 <style>

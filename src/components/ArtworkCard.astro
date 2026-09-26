@@ -2,6 +2,12 @@
 // ArtworkCard — used in both gallery and homepage preview
 // When imageUrl is provided: shows a real photo from Sanity CDN.
 // When not provided: shows a colour-tinted placeholder (category-based).
+//
+// lang (Phase 8-F): category and status badges used to be hardcoded French
+// text baked into this component, even though the title/description text
+// itself was always passed in already-translated by the calling page. Now
+// both label sets branch on lang so the English gallery/homepage show
+// English badges without duplicating this component.
 
 type Category = 'pottery' | 'stained-glass' | 'wire-sculpture';
 type Status = 'available' | 'display_only' | 'sold';
@@ -15,6 +21,7 @@ interface Props {
   price?: string;
   href?: string;
   status?: Status;
+  lang?: 'fr' | 'en';
 }
 
 const {
@@ -26,21 +33,36 @@ const {
   price,
   href = '#',
   status,
+  lang = 'fr',
 } = Astro.props;
 
 // No badge for the normal "available" case — only flag the two statuses
 // that change what a visitor should expect (can't buy it / already gone).
-const statusLabels: Partial<Record<Status, string>> = {
-  display_only: 'Exposition uniquement',
-  sold: 'Déjà vendue',
+const statusLabelsByLang: Record<'fr' | 'en', Partial<Record<Status, string>>> = {
+  fr: {
+    display_only: 'Exposition uniquement',
+    sold: 'Déjà vendue',
+  },
+  en: {
+    display_only: 'Display only',
+    sold: 'Already sold',
+  },
 };
-const statusLabel = status ? statusLabels[status] : undefined;
+const statusLabel = status ? statusLabelsByLang[lang][status] : undefined;
 
-const categoryLabels: Record<Category, string> = {
-  pottery:         'Céramique',
-  'stained-glass': 'Vitrail',
-  'wire-sculpture':'Fil de Fer',
+const categoryLabelsByLang: Record<'fr' | 'en', Record<Category, string>> = {
+  fr: {
+    pottery:         'Céramique',
+    'stained-glass': 'Vitrail',
+    'wire-sculpture':'Fil de Fer',
+  },
+  en: {
+    pottery:         'Pottery',
+    'stained-glass': 'Stained Glass',
+    'wire-sculpture':'Wire Sculpture',
+  },
 };
+const categoryLabels = categoryLabelsByLang[lang];
 
 // Sanity CDN image URL with width + auto WebP conversion
 const srcUrl = imageUrl ? `${imageUrl}?w=600&h=450&fit=crop&auto=format` : null;

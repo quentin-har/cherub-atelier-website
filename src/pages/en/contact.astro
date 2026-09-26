@@ -1,14 +1,24 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ContactForm from '../../components/ContactForm.astro';
 ---
-<BaseLayout title="Cherub Atelier — Contact (coming soon)" lang="en">
-  <section class="coming-soon">
-    <p class="eyebrow">Coming soon</p>
-    <h1>Contact — English version in progress</h1>
-    <a class="btn" href="/fr/contact">→ Page Contact française</a>
+
+<BaseLayout title="Cherub Atelier — Contact" lang="en">
+  <section class="section">
+    <div class="wrap form-wrap center">
+      <p class="eyebrow">Contact</p>
+      <h1>Write to Cherub Atelier</h1>
+      <p class="sub">
+        A question, an idea for a custom order&nbsp;?<br>
+        Leave a message, I'll be happy to reply.
+      </p>
+      <ContactForm lang="en" />
+    </div>
   </section>
 </BaseLayout>
+
 <style>
-  .coming-soon { text-align: center; padding: 6rem 1.4rem; }
-  h1 { font-size: clamp(1.4rem, 3.5vw, 2rem); margin: 0.5rem 0 1.5rem; }
+  .form-wrap { max-width: 560px; margin: 0 auto; }
+  h1 { font-size: clamp(1.9rem, 4.4vw, 2.7rem); margin: 0.4rem 0; }
+  .sub { opacity: 0.84; margin-top: 0.5rem; font-size: 0.95rem; }
 </style>

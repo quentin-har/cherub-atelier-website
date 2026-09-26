@@ -1,16 +1,56 @@
 ---
+// Legal notice — English mirror of fr/mentions-legales.astro. French law
+// requires the French version to exist (mentions légales); this English
+// one is provided for visitors who land on the English routes, and stays
+// in sync with the French stub until Phase 8-H replaces both with mum's
+// real details (full name, contact@domain.fr, non-commercial statement).
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
-<BaseLayout title="Cherub Atelier — Legal notice" lang="en">
+
+<BaseLayout
+  title="Cherub Atelier — Legal notice"
+  description="Legal notice for the Cherub Atelier website."
+  lang="en"
+>
   <section class="section">
     <div class="wrap content">
       <h1>Legal notice</h1>
-      <p>English version coming soon. <a href="/fr/mentions-legales">→ Version française</a></p>
+
+      <h2>Site publisher</h2>
+      <p>
+        This site is published on a personal, non-commercial basis.<br>
+        Full details will be added shortly.
+      </p>
+
+      <h2>Hosting</h2>
+      <p>
+        This site is hosted by <strong>Netlify, Inc.</strong><br>
+        44 Montgomery Street, Suite 300<br>
+        San Francisco, CA 94104, United States<br>
+        <a href="https://www.netlify.com" rel="noreferrer noopener" target="_blank">netlify.com</a>
+      </p>
+
+      <h2>Intellectual property</h2>
+      <p>
+        All creations (pottery, stained glass, wire sculptures) shown on this site are the
+        exclusive property of their creator. Any reproduction, even partial, is prohibited
+        without express permission.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        For any inquiry, please use the <a href="/en/contact">Contact page</a>.
+      </p>
+
+      <!-- TODO Phase 8-H: add full name, address, SIRET if applicable, DMARC email -->
     </div>
   </section>
 </BaseLayout>
+
 <style>
   .content { max-width: 720px; }
-  h1 { font-size: 2rem; margin-bottom: 1rem; }
+  h1 { font-size: clamp(1.9rem, 4vw, 2.5rem); margin-bottom: 2rem; }
+  h2 { font-size: 1.25rem; margin: 1.8rem 0 0.5rem; color: var(--accent); }
+  p  { font-size: 0.95rem; opacity: 0.85; line-height: 1.7; }
   a  { color: var(--accent); font-weight: 600; }
 </style>

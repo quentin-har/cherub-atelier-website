@@ -1,0 +1,192 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { sanityClient } from '../../../lib/sanity';
+import { allArtworksQuery } from '../../../lib/queries';
+
+interface Artwork {
+  _id: string;
+  title_fr: string;
+  title_en?: string;
+  slug?: string;
+  category: 'pottery' | 'stained-glass' | 'wire-sculpture';
+  description_fr?: string;
+  description_en?: string;
+  imageUrl?: string;
+  images?: string[];
+  price_indication?: string;
+  status?: 'available' | 'display_only' | 'sold';
+}
+
+// One static page per artwork, generated at build time (no server, no
+// runtime Sanity dependency — matches the site's fully static architecture,
+// and mirrors the French route one-for-one so both language versions of a
+// given piece always exist together).
+// The route param is the artwork's slug, falling back to its Sanity _id for
+// any artwork published before the slug field existed.
+export async function getStaticPaths() {
+  let artworks: Artwork[] = [];
+  try {
+    artworks = await sanityClient.fetch(allArtworksQuery);
+  } catch {
+    // Sanity not configured yet — no detail pages to generate.
+  }
+
+  return artworks.map((artwork) => ({
+    params: { slug: artwork.slug ?? artwork._id },
+    props: { artwork },
+  }));
+}
+
+interface Props {
+  artwork: Artwork;
+}
+
+const { artwork } = Astro.props;
+
+// title_en/description_en are optional in Sanity — fall back to the French
+// title so a piece is never titleless, and to no description at all
+// (rather than showing French text) when no English one exists yet.
+const title = artwork.title_en?.trim() || artwork.title_fr;
+const description = artwork.description_en?.trim() || undefined;
+
+const categoryLabels: Record<Artwork['category'], string> = {
+  pottery: 'Pottery',
+  'stained-glass': 'Stained Glass',
+  'wire-sculpture': 'Wire Sculpture',
+};
+
+// No badge for the normal "available" case, same as the gallery card.
+const statusLabels: Partial<Record<NonNullable<Artwork['status']>, string>> = {
+  display_only: 'Display only',
+  sold: 'Already sold',
+};
+const statusLabel = artwork.status ? statusLabels[artwork.status] : undefined;
+
+// Full, uncropped images for the detail view (gallery cards crop to 4:3;
+// here we show the whole piece, capped at a sensible max width). Falls back
+// to the single imageUrl for any artwork published before the images array
+// existed.
+const rawImageUrls = artwork.images?.length ? artwork.images : artwork.imageUrl ? [artwork.imageUrl] : [];
+const fullImageUrls = rawImageUrls.map((url) => `${url}?w=1400&fit=max&auto=format`);
+const fullImageUrl = fullImageUrls[0] ?? null;
+---
+
+<BaseLayout title={`Cherub Atelier — ${title}`} lang="en">
+  <section class="section wrap">
+    <a class="back" href="/en/gallery">&larr; Back to the gallery</a>
+
+    <div class="detail">
+      <div class="detail-media">
+        {fullImageUrl ? (
+          <>
+            <img id="main-photo" src={fullImageUrl} alt={title} loading="eager" decoding="async" />
+            {fullImageUrls.length > 1 && (
+              <div class="thumb-row" role="group" aria-label="Other photos of this piece">
+                {fullImageUrls.map((url, i) => (
+                  <button type="button" class="thumb" data-src={url} aria-label={`Photo ${i + 1} of ${fullImageUrls.length}`} aria-current={i === 0 ? 'true' : undefined}>
+                    <img src={url} alt="" loading="lazy" decoding="async" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <div class={`art-placeholder art-${artwork.category}`}></div>
+        )}
+      </div>
+
+      <div class="detail-info">
+        <div class="badges">
+          <span class="badge">{categoryLabels[artwork.category]}</span>
+          {statusLabel && <span class="badge unavailable">{statusLabel}</span>}
+        </div>
+        <h1>{title}</h1>
+        {description && <p class="desc">{description}</p>}
+        {artwork.price_indication && <div class="price">{artwork.price_indication}</div>}
+
+        <div class="btn-row mt-lg">
+          <a class="btn" href="/en/contact">Contact me about this piece</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .back {
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 1.8rem;
+  }
+  .back:hover { text-decoration: underline; }
+
+  .detail {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 2.4rem;
+    align-items: start;
+  }
+
+  .detail-media {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .detail-media img { width: 100%; height: auto; display: block; }
+  .detail-media .art-placeholder { aspect-ratio: 4/3; }
+
+  .thumb-row {
+    display: flex;
+    gap: 0.6rem;
+    padding: 0.8rem;
+    overflow-x: auto;
+  }
+  .thumb {
+    flex: 0 0 auto;
+    width: 64px;
+    height: 64px;
+    padding: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    background: none;
+    cursor: pointer;
+  }
+  .thumb[aria-current="true"] { border-color: var(--accent); }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .art-pottery        { background: linear-gradient(140deg, #fde0c8, #f5cba8); }
+  .art-stained-glass  { background: linear-gradient(140deg, #d4eaf8, #b8d8f0); }
+  .art-wire-sculpture { background: linear-gradient(140deg, #e8e8f0, #d8d8e8); }
+
+  .detail-info h1 {
+    font-size: clamp(1.8rem, 3.6vw, 2.6rem);
+    margin: 0.4rem 0 0.9rem;
+  }
+  .badges { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .badge.unavailable { background: var(--border); color: var(--text); }
+  .desc { opacity: 0.85; margin-bottom: 1rem; white-space: pre-line; }
+  .price { font-size: 1.05rem; font-weight: 600; opacity: 0.75; }
+
+  @media (max-width: 800px) {
+    .detail { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+  // Thumbnail strip on the artwork detail page: clicking a thumbnail swaps
+  // the main photo. Bundled by Astro into an external script, so it works
+  // under this site's strict script-src 'self' CSP (no inline JS anywhere).
+  const main = document.getElementById('main-photo') as HTMLImageElement | null;
+  document.querySelectorAll<HTMLButtonElement>('.thumb').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const src = btn.dataset.src;
+      if (!main || !src) return;
+      main.src = src;
+      document.querySelectorAll('.thumb').forEach((b) => b.removeAttribute('aria-current'));
+      btn.setAttribute('aria-current', 'true');
+    });
+  });
+</script>

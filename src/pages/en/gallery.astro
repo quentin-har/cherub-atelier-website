@@ -1,14 +1,151 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArtworkCard from '../../components/ArtworkCard.astro';
+import { sanityClient } from '../../lib/sanity';
+import { allArtworksQuery } from '../../lib/queries';
+
+interface Artwork {
+  _id: string;
+  title_fr: string;
+  title_en?: string;
+  slug?: string;
+  category: 'pottery' | 'stained-glass' | 'wire-sculpture';
+  description_fr?: string;
+  description_en?: string;
+  imageUrl?: string;
+  price_indication?: string;
+  status?: 'available' | 'display_only' | 'sold';
+}
+
+const titleOf = (a: Artwork) => a.title_en?.trim() || a.title_fr;
+const descriptionOf = (a: Artwork) => a.description_en?.trim() || undefined;
+
+let artworks: Artwork[] = [];
+try {
+  artworks = await sanityClient.fetch(allArtworksQuery);
+} catch {
+  // Sanity not configured yet — Phase 4 will resolve this
+}
 ---
-<BaseLayout title="Cherub Atelier — Gallery (coming soon)" lang="en">
-  <section class="coming-soon">
-    <p class="eyebrow">Coming soon</p>
-    <h1>Gallery — English version in progress</h1>
-    <a class="btn" href="/fr/galerie">→ Galerie française</a>
+
+<BaseLayout title="Cherub Atelier — Gallery" lang="en">
+  <section class="section wrap">
+
+    <div class="ghead center">
+      <p class="eyebrow">The Gallery</p>
+      <h1>Available creations</h1>
+      <p class="sub">
+        For pricing or to reserve a piece, write to me via the&nbsp;
+        <a href="/en/contact">Contact</a> page.
+      </p>
+    </div>
+
+    {artworks.length > 0 ? (
+      <>
+        <!-- Filter chips -->
+        <div class="filters" role="group" aria-label="Filter by category">
+          <button class="chip active" data-filter="all">All</button>
+          <button class="chip" data-filter="pottery">Pottery</button>
+          <button class="chip" data-filter="stained-glass">Stained Glass</button>
+          <button class="chip" data-filter="wire-sculpture">Wire Sculpture</button>
+        </div>
+
+        <!-- Artwork grid -->
+        <div class="ggrid" id="gallery-grid">
+          {artworks.map(artwork => (
+            <ArtworkCard
+              title={titleOf(artwork)}
+              category={artwork.category}
+              description={descriptionOf(artwork)}
+              imageUrl={artwork.imageUrl}
+              status={artwork.status}
+              price={artwork.price_indication}
+              href={`/en/gallery/${artwork.slug ?? artwork._id}`}
+              lang="en"
+            />
+          ))}
+        </div>
+      </>
+    ) : (
+      <div class="empty-state">
+        <p>Creations are coming soon — check back with us&nbsp;!</p>
+        <a class="btn" href="/en/contact">Contact me</a>
+      </div>
+    )}
+
   </section>
 </BaseLayout>
+
 <style>
-  .coming-soon { text-align: center; padding: 6rem 1.4rem; }
-  h1 { font-size: clamp(1.4rem, 3.5vw, 2rem); margin: 0.5rem 0 1.5rem; }
+  .ghead { margin-bottom: 0.5rem; }
+  h1 { font-size: clamp(1.9rem, 4.4vw, 2.7rem); margin: 0.4rem 0; }
+  .sub { opacity: 0.8; margin-top: 0.5rem; font-size: 0.95rem; }
+  .sub a { color: var(--accent); font-weight: 600; }
+
+  .filters {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 1.6rem 0 2rem;
+  }
+  .chip {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    opacity: 0.8;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .chip:hover { opacity: 1; border-color: var(--accent); }
+  .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); opacity: 1; }
+
+  .ggrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.6rem;
+  }
+
+  .empty-state { text-align: center; padding: 4rem 1rem; opacity: 0.7; }
+
+  @media (max-width: 900px) { .ggrid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .ggrid { grid-template-columns: 1fr; } }
 </style>
+
+<script>
+  // Gallery filter — plain JavaScript, zero dependencies
+  const chips = document.querySelectorAll<HTMLButtonElement>('.chip');
+  const grid  = document.getElementById('gallery-grid');
+
+  function applyFilter(filter: string) {
+    grid?.querySelectorAll<HTMLElement>('[data-cat]').forEach(card => {
+      const match = filter === 'all' || card.dataset.cat === filter;
+      card.style.display = match ? '' : 'none';
+    });
+  }
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      chips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      applyFilter(chip.dataset.filter ?? 'all');
+    });
+  });
+
+  // Arriving from the homepage's "Three crafts" cards (e.g.
+  // /en/gallery?category=pottery) pre-selects the matching chip instead of
+  // always landing on "All".
+  const requestedCategory = new URLSearchParams(window.location.search).get('category');
+  const matchingChip = requestedCategory
+    ? Array.from(chips).find(c => c.dataset.filter === requestedCategory)
+    : undefined;
+  if (matchingChip) {
+    chips.forEach(c => c.classList.remove('active'));
+    matchingChip.classList.add('active');
+    applyFilter(requestedCategory!);
+  }
+</script>

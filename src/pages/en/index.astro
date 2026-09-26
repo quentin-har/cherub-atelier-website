@@ -1,24 +1,259 @@
 ---
-// English homepage — stub until post-launch translation pass (Phase 8).
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArtworkCard from '../../components/ArtworkCard.astro';
+import CategoryShowcase from '../../components/CategoryShowcase.astro';
+import { sanityClient } from '../../lib/sanity';
+import { allArtworksQuery } from '../../lib/queries';
+
+// Fetch a 3-piece preview from Sanity.
+// Returns [] when Sanity is not yet configured (Phase 2/3 — expected).
+interface Artwork {
+  _id: string;
+  title_fr: string;
+  title_en?: string;
+  slug?: string;
+  category: 'pottery' | 'stained-glass' | 'wire-sculpture';
+  description_fr?: string;
+  description_en?: string;
+  imageUrl?: string;
+  price_indication?: string;
+  status?: 'available' | 'display_only' | 'sold';
+  featured_home?: boolean;
+}
+
+let all: Artwork[] = [];
+let preview: Artwork[] = [];
+try {
+  all = await sanityClient.fetch(allArtworksQuery);
+  preview = all.slice(0, 3);
+} catch {
+  // Sanity not configured yet — Phase 4 will resolve this
+}
+
+// title_en/description_en are optional in Sanity (mum fills them in over
+// time) — fall back to the French title so a piece is never titleless, and
+// to a plain English placeholder instead of showing French text on an
+// English page when no description exists yet.
+const titleOf = (a: Artwork) => a.title_en?.trim() || a.title_fr;
+const descriptionOf = (a: Artwork) => a.description_en?.trim() || undefined;
+
+// Group real photos by category for the "Three crafts" cards below
+// (CategoryShowcase.astro falls back to the colour placeholder on its own
+// if a category has no images yet). Artworks mum has ticked "featured on
+// homepage" come first; the rest fill any remaining slots newest-first
+// (allArtworksQuery already orders `all` that way) — so a category with
+// nothing featured just shows its newest pieces, no extra step required.
+const imagesFor = (cat: Artwork['category']) => {
+  const inCategory = all.filter((a) => a.category === cat && a.imageUrl);
+  const featured = inCategory.filter((a) => a.featured_home);
+  const rest = inCategory.filter((a) => !a.featured_home);
+  return [...featured, ...rest].map((a) => a.imageUrl as string);
+};
+
+const showcaseImages = {
+  pottery: imagesFor('pottery'),
+  'stained-glass': imagesFor('stained-glass'),
+  'wire-sculpture': imagesFor('wire-sculpture'),
+};
 ---
 
-<BaseLayout title="Cherub Atelier — Coming soon" lang="en">
-  <section class="coming-soon">
-    <p class="eyebrow">Coming soon</p>
-    <h1>English version in progress</h1>
-    <p>The English translation of this site is on its way.</p>
-    <a class="btn" href="/fr/">→ Version française</a>
+<BaseLayout title="Cherub Atelier — Home" lang="en">
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <p class="eyebrow">Handmade art studio</p>
+    <h1>Playing with <em>materials</em>,<br>colour and light</h1>
+    <p class="hero-sub">
+      Pottery, Stained Glass and Wire Sculpture.<br>
+      Every piece from Cherub Atelier is unique, handcrafted.
+    </p>
+    <div class="btn-row center">
+      <a class="btn" href="/en/gallery">View the gallery</a>
+      <a class="btn ghost" href="/en/contact">Contact me</a>
+    </div>
   </section>
+
+  <!-- ── Three crafts ── -->
+  <section class="section wrap center">
+    <p class="eyebrow">Three crafts</p>
+    <h2 class="stitle">One material, one gesture, one piece</h2>
+    <div class="cards3">
+      <a class="ccard" href="/en/gallery?category=pottery">
+        <CategoryShowcase images={showcaseImages.pottery} category="pottery" />
+        <div class="cb"><h3>Pottery</h3><p>Hand-shaped sculptures and pottery — women, animals, flowers — glazed in stoneware or earthenware.</p></div>
+      </a>
+      <a class="ccard" href="/en/gallery?category=stained-glass">
+        <CategoryShowcase images={showcaseImages["stained-glass"]} category="stained-glass" />
+        <div class="cb"><h3>Stained Glass</h3><p>Panels and hanging pieces in coloured glass, assembled with copper foil (Tiffany) or traditional lead.</p></div>
+      </a>
+      <a class="ccard" href="/en/gallery?category=wire-sculpture">
+        <CategoryShowcase images={showcaseImages["wire-sculpture"]} category="wire-sculpture" />
+        <div class="cb"><h3>Wire Sculpture</h3><p>Silhouettes and airy sculptures shaped from annealed wire.</p></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ── How a piece comes to life ── -->
+  <section class="section steps-section">
+    <div class="wrap center">
+      <p class="eyebrow">The studio</p>
+      <h2 class="stitle">How a piece comes to life</h2>
+      <div class="grid4">
+        <div class="step"><div class="n">1</div><h3>The idea</h3><p>A sketch, a material, a colour in mind.</p></div>
+        <div class="step"><div class="n">2</div><h3>Shaping</h3><p>Sculpting clay, cutting glass, bending wire.</p></div>
+        <div class="step"><div class="n">3</div><h3>Finishing</h3><p>Glazing, firing, soldering, fastening.</p></div>
+        <div class="step"><div class="n">4</div><h3>The signature</h3><p>Every piece inspected and signed — it is born.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Gallery preview (visible once Sanity has artworks) ── -->
+  {preview.length > 0 && (
+    <section class="section wrap center">
+      <p class="eyebrow">Preview</p>
+      <h2 class="stitle">A few creations</h2>
+      <div class="preview-grid">
+        {preview.map(artwork => (
+          <ArtworkCard
+            title={titleOf(artwork)}
+            category={artwork.category}
+            description={descriptionOf(artwork)}
+            imageUrl={artwork.imageUrl}
+            status={artwork.status}
+            price={artwork.price_indication}
+            href={`/en/gallery/${artwork.slug ?? artwork._id}`}
+            lang="en"
+          />
+        ))}
+      </div>
+      <div class="mt-lg">
+        <a class="btn ghost" href="/en/gallery">View the full gallery</a>
+      </div>
+    </section>
+  )}
+
+  <!-- ── Quote ── -->
+  <section class="quote-section">
+    <blockquote>
+      &ldquo;&nbsp;Playing with materials, colour and light.&nbsp;&rdquo;
+      <span class="sig">Cherub Atelier</span>
+    </blockquote>
+  </section>
+
+  <!-- ── CTA ── -->
+  <section class="cta-section">
+    <p class="eyebrow">Custom orders</p>
+    <h2>A custom commission?</h2>
+    <p>A specific colour, a particular size, a one-of-a-kind gift… the studio also creates made-to-order pieces.</p>
+    <a class="btn cta-btn" href="/en/contact">Start a project</a>
+  </section>
+
 </BaseLayout>
 
 <style>
-  .coming-soon {
+  /* Hero */
+  .hero {
     text-align: center;
-    padding: 6rem 1.4rem;
-    max-width: 480px;
+    padding: 2.8rem 1.4rem 3.4rem;
+    background: radial-gradient(circle at 50% 0%, #f4dcc2, var(--bg) 62%);
+  }
+  .hero h1 { font-size: clamp(2.2rem, 5.4vw, 3.7rem); margin: 0.4rem 0 1.1rem; }
+  .hero h1 em { font-style: italic; color: var(--accent); }
+  .hero-sub { font-size: 1.12rem; max-width: 44ch; margin: 0 auto 1.8rem; opacity: 0.84; }
+
+  /* Category intro cards */
+  .cards3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 2.2rem;
+  }
+  .ccard {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .ccard:hover { transform: translateY(-5px); box-shadow: 0 16px 34px rgba(143,87,52,.2); }
+  .ccard .cb { padding: 1.15rem 1.25rem 1.4rem; }
+  .ccard h3 { font-size: 1.3rem; margin-bottom: 0.4rem; }
+  .ccard p { font-size: 0.9rem; opacity: 0.8; }
+
+  /* Process steps */
+  .steps-section { padding: 3rem 0; }
+  .grid4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.4rem;
+    margin-top: 2rem;
+    text-align: left;
+  }
+  .step .n {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--fhead);
+    font-weight: 700; font-size: 1.05rem;
+    background: var(--soft); color: var(--accent);
+    margin-bottom: 0.8rem;
+  }
+  .step h3 { font-family: var(--fhead); font-size: 1.1rem; margin-bottom: 0.35rem; }
+  .step p  { font-size: 0.86rem; opacity: 0.8; }
+
+  /* Gallery preview */
+  .preview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 1.8rem;
+  }
+
+  /* Quote */
+  .quote-section {
+    text-align: center;
+    background: var(--accent);
+    color: #fdf3ea;
+    padding: 3.2rem 1.4rem;
+  }
+  blockquote {
+    font-family: var(--fhead);
+    font-style: italic;
+    font-size: clamp(1.4rem, 3.2vw, 2rem);
+    max-width: 26ch;
     margin: 0 auto;
   }
-  h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); margin: 0.5rem 0 1rem; }
-  p  { opacity: 0.75; margin-bottom: 1.5rem; }
+  .sig {
+    display: block;
+    margin-top: 1.2rem;
+    font-family: var(--fbody);
+    font-size: 0.8rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+
+  /* CTA */
+  .cta-section {
+    padding: 3.4rem 1.4rem;
+    text-align: center;
+    background: #3a2c22;
+    color: #f4e6d6;
+  }
+  .cta-section h2 { font-family: var(--fhead); font-size: clamp(1.6rem, 3.4vw, 2.2rem); margin-bottom: 0.8rem; }
+  .cta-section p { opacity: 0.85; max-width: 46ch; margin: 0 auto 1.4rem; }
+  .cta-section .eyebrow { color: #e0a25e; }
+  .cta-btn { background: #e0a25e; color: #3a2c22; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .cards3, .preview-grid { grid-template-columns: repeat(2, 1fr); }
+    .grid4 { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .cards3, .preview-grid, .grid4 { grid-template-columns: 1fr; }
+  }
 </style>

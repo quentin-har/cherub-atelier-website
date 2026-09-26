@@ -14,7 +14,7 @@ const year = new Date().getFullYear();
       : <><a href={`mailto:contact@cherub-atelier.fr`}>contact@cherub-atelier.fr</a></>
     }
   </p>
-  <p>© {year} Cherub Atelier — Fait main, avec soin.</p>
+  <p>© {year} Cherub Atelier — {lang === 'fr' ? 'Fait main, avec soin.' : 'Handmade, with care.'}</p>
   <p>
     <a href={`/${lang}/mentions-legales`}>
       {lang === 'fr' ? 'Mentions légales' : 'Legal notice'}
