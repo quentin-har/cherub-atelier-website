@@ -30,8 +30,10 @@ const srcFor = (url: string) => `${url}?w=600&h=450&fit=crop&auto=format`;
 
 {slides.length > 0 ? (
   <div class="showcase" aria-hidden="true">
-    {slides.map((url) => (
-      <img src={srcFor(url)} alt="" loading="lazy" decoding="async" width="600" height="450" />
+    {slides.map((url, i) => (
+      i === 0
+        ? <img src={srcFor(url)} alt="" loading="eager" fetchpriority="high" decoding="async" width="600" height="450" />
+        : <img src={srcFor(url)} alt="" loading="lazy" decoding="async" width="600" height="450" />
     ))}
   </div>
 ) : (

@@ -1,0 +1,112 @@
+---
+// Shared category-filter chips + client-side filtering for the gallery
+// grid. Previously fr/galerie.astro and en/gallery.astro each carried
+// their own verbatim copy of this markup, CSS, and script -- identical
+// except for the visible labels. One real risk of that setup: a bug fix
+// or accessibility improvement (like the aria-pressed state added here)
+// landing in one language and being forgotten in the other.
+//
+// Renders the filter chips, then a <slot /> for the artwork grid itself
+// (the calling page still maps its own artworks into <ArtworkCard />,
+// since the two languages pull slightly different fields). The filter
+// script only needs the grid's children to carry a `data-cat` attribute,
+// which ArtworkCard.astro already sets -- it doesn't care what's slotted.
+import { categoryLabels } from '../lib/labels';
+
+interface Props {
+  lang: 'fr' | 'en';
+}
+const { lang } = Astro.props;
+
+const copy = lang === 'fr'
+  ? { ariaLabel: 'Filtrer par catégorie', all: 'Tout' }
+  : { ariaLabel: 'Filter by category', all: 'All' };
+
+const labels = categoryLabels[lang];
+const categories = ['pottery', 'stained-glass', 'wire-sculpture'] as const;
+---
+
+<div class="filters" role="group" aria-label={copy.ariaLabel}>
+  <button class="chip active" data-filter="all" aria-pressed="true">{copy.all}</button>
+  {categories.map((cat) => (
+    <button class="chip" data-filter={cat} aria-pressed="false">{labels[cat]}</button>
+  ))}
+</div>
+
+<div class="ggrid" id="gallery-grid">
+  <slot />
+</div>
+
+<style>
+  .filters {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 1.6rem 0 2rem;
+  }
+  .chip {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    opacity: 0.8;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .chip:hover { opacity: 1; border-color: var(--accent); }
+  .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); opacity: 1; }
+
+  .ggrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.6rem;
+  }
+
+  @media (max-width: 900px) { .ggrid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .ggrid { grid-template-columns: 1fr; } }
+</style>
+
+<script>
+  // Gallery filter — plain JavaScript, zero dependencies. Shared between
+  // the French and English gallery pages.
+  const chips = document.querySelectorAll<HTMLButtonElement>('.chip');
+  const grid  = document.getElementById('gallery-grid');
+
+  function applyFilter(filter: string) {
+    grid?.querySelectorAll<HTMLElement>('[data-cat]').forEach(card => {
+      const match = filter === 'all' || card.dataset.cat === filter;
+      card.style.display = match ? '' : 'none';
+    });
+  }
+
+  // aria-pressed reflects which chip is currently selected, so a screen
+  // reader user gets the same signal a sighted user gets from the
+  // highlighted chip -- previously only the visual `.active` class existed.
+  function selectChip(chip: HTMLButtonElement) {
+    chips.forEach(c => {
+      c.classList.remove('active');
+      c.setAttribute('aria-pressed', 'false');
+    });
+    chip.classList.add('active');
+    chip.setAttribute('aria-pressed', 'true');
+    applyFilter(chip.dataset.filter ?? 'all');
+  }
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => selectChip(chip));
+  });
+
+  // Arriving from the homepage's category cards (e.g. ?category=pottery)
+  // pre-selects the matching chip instead of always landing on "all"/"Tout".
+  const requestedCategory = new URLSearchParams(window.location.search).get('category');
+  const matchingChip = requestedCategory
+    ? Array.from(chips).find(c => c.dataset.filter === requestedCategory)
+    : undefined;
+  if (matchingChip) {
+    selectChip(matchingChip);
+  }
+</script>

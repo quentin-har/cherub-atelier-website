@@ -2,6 +2,7 @@
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { sanityClient } from '../../../lib/sanity';
 import { allArtworksQuery } from '../../../lib/queries';
+import { categoryLabels as categoryLabelsByLang, statusLabels as statusLabelsByLang } from '../../../lib/labels';
 
 interface Artwork {
   _id: string;
@@ -14,6 +15,7 @@ interface Artwork {
   description_en?: string;
   imageUrl?: string;
   images?: string[];
+  imageDimensions?: { width: number; height: number }[];
   price_indication?: string;
   status?: 'available' | 'display_only' | 'sold';
 }
@@ -53,26 +55,35 @@ const { artwork } = Astro.props;
 const title = artwork.title_en?.trim() || artwork.title_fr;
 const description = artwork.description_en?.trim() || undefined;
 
-const categoryLabels: Record<Artwork['category'], string> = {
-  pottery: 'Pottery',
-  'stained-glass': 'Stained Glass',
-  'wire-sculpture': 'Wire Sculpture',
-};
-
-// No badge for the normal "available" case, same as the gallery card.
-const statusLabels: Partial<Record<NonNullable<Artwork['status']>, string>> = {
-  display_only: 'Display only',
-  sold: 'Already sold',
-};
-const statusLabel = artwork.status ? statusLabels[artwork.status] : undefined;
+// Label text lives in src/lib/labels.ts, shared with ArtworkCard.astro
+// and the French detail-page template instead of each keeping its own copy.
+const categoryLabels = categoryLabelsByLang.en;
+const statusLabel = artwork.status ? statusLabelsByLang.en[artwork.status] : undefined;
 
 // Full, uncropped images for the detail view (gallery cards crop to 4:3;
 // here we show the whole piece, capped at a sensible max width). Falls back
 // to the single imageUrl for any artwork published before the images array
 // existed.
 const rawImageUrls = artwork.images?.length ? artwork.images : artwork.imageUrl ? [artwork.imageUrl] : [];
+const rawDimensions = artwork.imageDimensions ?? [];
 const fullImageUrls = rawImageUrls.map((url) => `${url}?w=1400&fit=max&auto=format`);
 const fullImageUrl = fullImageUrls[0] ?? null;
+
+// Real pixel dimensions for the main photo, so the browser can reserve the
+// right box before the image loads (no layout shift) instead of guessing.
+// Falls back to a plausible 4:3 box for any artwork published before
+// imageDimensions existed on the query -- better than leaving the
+// attributes off entirely.
+const mainDimensions = rawDimensions[0] ?? { width: 1400, height: 1050 };
+
+// Three densities of the same photo so a phone doesn't download the full
+// 1400px master. `fit=max` with only `w` set preserves the original aspect
+// ratio, so this is safe even though artworks aren't all the same shape.
+const mainSrcset = fullImageUrl
+  ? [700, 1000, 1400]
+      .map((w) => `${rawImageUrls[0]}?w=${w}&fit=max&auto=format ${w}w`)
+      .join(', ')
+  : undefined;
 
 // SEO (2026-09-26): same fallback as the French route (see its comment) --
 // use the artwork's own English description once one exists, a templated
@@ -103,7 +114,17 @@ const ogImage = artwork.imageUrl
       <div class="detail-media">
         {fullImageUrl ? (
           <>
-            <img id="main-photo" src={fullImageUrl} alt={title} loading="eager" decoding="async" />
+            <img
+              id="main-photo"
+              src={fullImageUrl}
+              srcset={mainSrcset}
+              sizes="(max-width: 800px) 100vw, 640px"
+              width={mainDimensions.width}
+              height={mainDimensions.height}
+              alt={title}
+              loading="eager"
+              decoding="async"
+            />
             {fullImageUrls.length > 1 && (
               <div class="thumb-row" role="group" aria-label="Other photos of this piece">
                 {fullImageUrls.map((url, i) => (

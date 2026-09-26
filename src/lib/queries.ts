@@ -14,6 +14,12 @@ export const allArtworksQuery = `
     description_fr,
     description_en,
     "images": images[].asset->url,
+    // Native pixel dimensions per image, in the same order as "images" --
+    // added 2026-09-26 so the detail page can set real width/height (and
+    // therefore srcset) on the full, uncropped photo instead of leaving the
+    // browser to guess and reflow once it loads. Sanity stores this on
+    // every asset automatically; nothing to fill in on mum's end.
+    "imageDimensions": images[].asset->metadata.dimensions,
     "imageUrl": images[0].asset->url,
     status,
     price_indication,
@@ -38,6 +44,12 @@ export const artworksByCategoryQuery = `
     description_fr,
     description_en,
     "images": images[].asset->url,
+    // Native pixel dimensions per image, in the same order as "images" --
+    // added 2026-09-26 so the detail page can set real width/height (and
+    // therefore srcset) on the full, uncropped photo instead of leaving the
+    // browser to guess and reflow once it loads. Sanity stores this on
+    // every asset automatically; nothing to fill in on mum's end.
+    "imageDimensions": images[].asset->metadata.dimensions,
     "imageUrl": images[0].asset->url,
     status,
     price_indication,
@@ -65,6 +77,12 @@ export const artworkBySlugOrIdQuery = `
     description_fr,
     description_en,
     "images": images[].asset->url,
+    // Native pixel dimensions per image, in the same order as "images" --
+    // added 2026-09-26 so the detail page can set real width/height (and
+    // therefore srcset) on the full, uncropped photo instead of leaving the
+    // browser to guess and reflow once it loads. Sanity stores this on
+    // every asset automatically; nothing to fill in on mum's end.
+    "imageDimensions": images[].asset->metadata.dimensions,
     "imageUrl": images[0].asset->url,
     status,
     price_indication,

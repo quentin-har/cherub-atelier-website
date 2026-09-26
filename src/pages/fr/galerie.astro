@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArtworkCard from '../../components/ArtworkCard.astro';
+import GalleryFilters from '../../components/GalleryFilters.astro';
 import { sanityClient } from '../../lib/sanity';
 import { allArtworksQuery } from '../../lib/queries';
 
@@ -40,30 +41,19 @@ try {
     </div>
 
     {artworks.length > 0 ? (
-      <>
-        <!-- Filter chips -->
-        <div class="filters" role="group" aria-label="Filtrer par catégorie">
-          <button class="chip active" data-filter="all">Tout</button>
-          <button class="chip" data-filter="pottery">Céramique</button>
-          <button class="chip" data-filter="stained-glass">Vitrail</button>
-          <button class="chip" data-filter="wire-sculpture">Fil de Fer</button>
-        </div>
-
-        <!-- Artwork grid -->
-        <div class="ggrid" id="gallery-grid">
-          {artworks.map(artwork => (
-            <ArtworkCard
-              title={artwork.title_fr}
-              category={artwork.category}
-              description={artwork.description_fr}
-              imageUrl={artwork.imageUrl}
-              status={artwork.status}
-              price={artwork.price_indication}
-              href={`/fr/galerie/${artwork.slug ?? artwork._id}`}
-            />
-          ))}
-        </div>
-      </>
+      <GalleryFilters lang="fr">
+        {artworks.map(artwork => (
+          <ArtworkCard
+            title={artwork.title_fr}
+            category={artwork.category}
+            description={artwork.description_fr}
+            imageUrl={artwork.imageUrl}
+            status={artwork.status}
+            price={artwork.price_indication}
+            href={`/fr/galerie/${artwork.slug ?? artwork._id}`}
+          />
+        ))}
+      </GalleryFilters>
     ) : (
       <div class="empty-state">
         <p>Les créations arrivent bientôt — revenez nous voir&nbsp;!</p>
@@ -80,70 +70,5 @@ try {
   .sub { opacity: 0.8; margin-top: 0.5rem; font-size: 0.95rem; }
   .sub a { color: var(--accent); font-weight: 600; }
 
-  .filters {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin: 1.6rem 0 2rem;
-  }
-  .chip {
-    font-size: 0.85rem;
-    font-weight: 600;
-    padding: 0.45rem 1rem;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    background: var(--card);
-    color: var(--text);
-    opacity: 0.8;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .chip:hover { opacity: 1; border-color: var(--accent); }
-  .chip.active { background: var(--accent); color: #fff; border-color: var(--accent); opacity: 1; }
-
-  .ggrid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.6rem;
-  }
-
   .empty-state { text-align: center; padding: 4rem 1rem; opacity: 0.7; }
-
-  @media (max-width: 900px) { .ggrid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 560px) { .ggrid { grid-template-columns: 1fr; } }
 </style>
-
-<script>
-  // Gallery filter — plain JavaScript, zero dependencies
-  const chips = document.querySelectorAll<HTMLButtonElement>('.chip');
-  const grid  = document.getElementById('gallery-grid');
-
-  function applyFilter(filter: string) {
-    grid?.querySelectorAll<HTMLElement>('[data-cat]').forEach(card => {
-      const match = filter === 'all' || card.dataset.cat === filter;
-      card.style.display = match ? '' : 'none';
-    });
-  }
-
-  chips.forEach(chip => {
-    chip.addEventListener('click', () => {
-      chips.forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      applyFilter(chip.dataset.filter ?? 'all');
-    });
-  });
-
-  // Arriving from the homepage's "Trois savoir-faire" cards (e.g.
-  // /fr/galerie?category=pottery) pre-selects the matching chip instead of
-  // always landing on "Tout".
-  const requestedCategory = new URLSearchParams(window.location.search).get('category');
-  const matchingChip = requestedCategory
-    ? Array.from(chips).find(c => c.dataset.filter === requestedCategory)
-    : undefined;
-  if (matchingChip) {
-    chips.forEach(c => c.classList.remove('active'));
-    matchingChip.classList.add('active');
-    applyFilter(requestedCategory!);
-  }
-</script>

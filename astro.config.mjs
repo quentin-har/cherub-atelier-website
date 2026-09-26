@@ -28,11 +28,6 @@ export default defineConfig({
     },
   },
 
-  // Allow Sanity's CDN domain for the <Image> component
-  image: {
-    domains: ['cdn.sanity.io'],
-  },
-
   // Phase 6: never inline compiled CSS as <style> elements. Astro's default
   // ('auto') inlines any stylesheet under 4KB directly into the HTML, which
   // a strict CSP (style-src 'self', no 'unsafe-inline'/hash/nonce) blocks

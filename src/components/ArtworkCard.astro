@@ -9,8 +9,12 @@
 // both label sets branch on lang so the English gallery/homepage show
 // English badges without duplicating this component.
 
-type Category = 'pottery' | 'stained-glass' | 'wire-sculpture';
-type Status = 'available' | 'display_only' | 'sold';
+import {
+  categoryLabels as categoryLabelsByLang,
+  statusLabels as statusLabelsByLang,
+  type Category,
+  type Status,
+} from '../lib/labels';
 
 interface Props {
   title: string;
@@ -38,30 +42,9 @@ const {
 
 // No badge for the normal "available" case — only flag the two statuses
 // that change what a visitor should expect (can't buy it / already gone).
-const statusLabelsByLang: Record<'fr' | 'en', Partial<Record<Status, string>>> = {
-  fr: {
-    display_only: 'Exposition uniquement',
-    sold: 'Déjà vendue',
-  },
-  en: {
-    display_only: 'Display only',
-    sold: 'Already sold',
-  },
-};
+// Label text itself now lives in src/lib/labels.ts, shared with the two
+// artwork detail-page templates instead of each keeping its own copy.
 const statusLabel = status ? statusLabelsByLang[lang][status] : undefined;
-
-const categoryLabelsByLang: Record<'fr' | 'en', Record<Category, string>> = {
-  fr: {
-    pottery:         'Céramique',
-    'stained-glass': 'Vitrail',
-    'wire-sculpture':'Fil de Fer',
-  },
-  en: {
-    pottery:         'Pottery',
-    'stained-glass': 'Stained Glass',
-    'wire-sculpture':'Wire Sculpture',
-  },
-};
 const categoryLabels = categoryLabelsByLang[lang];
 
 // Sanity CDN image URL with width + auto WebP conversion
