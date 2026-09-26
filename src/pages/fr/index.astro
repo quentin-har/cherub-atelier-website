@@ -16,6 +16,7 @@ interface Artwork {
   imageUrl?: string;
   price_indication?: string;
   status?: 'available' | 'display_only' | 'sold';
+  featured_home?: boolean;
 }
 
 let all: Artwork[] = [];
@@ -29,9 +30,17 @@ try {
 
 // Group real photos by category for the "Trois savoir-faire" cards below
 // (CategoryShowcase.astro falls back to the colour placeholder on its own
-// if a category has no images yet).
-const imagesFor = (cat: Artwork['category']) =>
-  all.filter((a) => a.category === cat && a.imageUrl).map((a) => a.imageUrl as string);
+// if a category has no images yet). Artworks mum has ticked "Mettre en
+// avant sur la page d'accueil" come first; the rest fill any remaining
+// slots newest-first (allArtworksQuery already orders `all` that way) —
+// so a category with nothing featured just shows its newest pieces, no
+// extra step required from her.
+const imagesFor = (cat: Artwork['category']) => {
+  const inCategory = all.filter((a) => a.category === cat && a.imageUrl);
+  const featured = inCategory.filter((a) => a.featured_home);
+  const rest = inCategory.filter((a) => !a.featured_home);
+  return [...featured, ...rest].map((a) => a.imageUrl as string);
+};
 
 const showcaseImages = {
   pottery: imagesFor('pottery'),

@@ -16,7 +16,8 @@ export const allArtworksQuery = `
     "imageUrl": images[0].asset->url,
     status,
     price_indication,
-    date_created
+    date_created,
+    featured_home
   }
 `;
 
@@ -38,7 +39,8 @@ export const artworksByCategoryQuery = `
     "imageUrl": images[0].asset->url,
     status,
     price_indication,
-    date_created
+    date_created,
+    featured_home
   }
 `;
 
@@ -61,7 +63,8 @@ export const artworkBySlugOrIdQuery = `
     "imageUrl": images[0].asset->url,
     status,
     price_indication,
-    date_created
+    date_created,
+    featured_home
   }
 `;
 
