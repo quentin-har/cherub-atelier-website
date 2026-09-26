@@ -1,0 +1,81 @@
+---
+// CategoryShowcase — used on the homepage's "Trois savoir-faire" cards.
+// Shows a slow, automatic crossfade of up to 4 real photos from that
+// category's artworks (pure CSS, no JavaScript — keeps the site's
+// script-src 'self' CSP untouched and its Lighthouse Performance 100).
+// Falls back to the original colour-gradient placeholder when a category
+// has no published artworks yet (e.g. right after Phase 4, before any
+// content existed).
+
+type Category = 'pottery' | 'stained-glass' | 'wire-sculpture';
+
+interface Props {
+  images: string[];
+  category: Category;
+}
+
+const { images, category } = Astro.props;
+
+// Always resolve to exactly 4 slides so the fixed 4-slot crossfade timing
+// below applies uniformly. With fewer than 4 real photos so far, early
+// ones repeat to fill the remaining slots — harmless on a slow 16s cycle,
+// and it stops mattering on its own as more artworks get published.
+const slides =
+  images.length > 0
+    ? Array.from({ length: 4 }, (_, i) => images[i % images.length])
+    : [];
+
+const srcFor = (url: string) => `${url}?w=600&h=450&fit=crop&auto=format`;
+---
+
+{slides.length > 0 ? (
+  <div class="showcase" aria-hidden="true">
+    {slides.map((url) => (
+      <img src={srcFor(url)} alt="" loading="lazy" decoding="async" width="600" height="450" />
+    ))}
+  </div>
+) : (
+  <div class={`art-placeholder art-${category}`}></div>
+)}
+
+<style>
+  .showcase {
+    position: relative;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    background: var(--soft);
+  }
+  .showcase img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    animation: showcase-fade 16s infinite;
+  }
+  .showcase img:nth-child(1) { animation-delay: 0s; }
+  .showcase img:nth-child(2) { animation-delay: 4s; }
+  .showcase img:nth-child(3) { animation-delay: 8s; }
+  .showcase img:nth-child(4) { animation-delay: 12s; }
+
+  @keyframes showcase-fade {
+    0%, 100% { opacity: 0; }
+    3%, 22%  { opacity: 1; }
+    25%      { opacity: 0; }
+  }
+
+  /* Respect motion-sensitivity settings: freeze on the first photo
+     instead of looping the crossfade forever. */
+  @media (prefers-reduced-motion: reduce) {
+    .showcase img { animation: none; opacity: 0; }
+    .showcase img:first-child { opacity: 1; }
+  }
+
+  /* Same gradients as the gallery's own placeholder (ArtworkCard.astro),
+     kept here so this component is self-contained. */
+  .art-placeholder    { aspect-ratio: 4/3; }
+  .art-pottery        { background: linear-gradient(140deg, #fde0c8, #f5cba8); }
+  .art-stained-glass  { background: linear-gradient(140deg, #d4eaf8, #b8d8f0); }
+  .art-wire-sculpture { background: linear-gradient(140deg, #e8e8f0, #d8d8e8); }
+</style>

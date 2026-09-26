@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArtworkCard from '../../components/ArtworkCard.astro';
+import CategoryShowcase from '../../components/CategoryShowcase.astro';
 import { sanityClient } from '../../lib/sanity';
 import { allArtworksQuery } from '../../lib/queries';
 
@@ -17,13 +18,26 @@ interface Artwork {
   status?: 'available' | 'display_only' | 'sold';
 }
 
+let all: Artwork[] = [];
 let preview: Artwork[] = [];
 try {
-  const all: Artwork[] = await sanityClient.fetch(allArtworksQuery);
+  all = await sanityClient.fetch(allArtworksQuery);
   preview = all.slice(0, 3);
 } catch {
   // Sanity not configured yet — Phase 4 will resolve this
 }
+
+// Group real photos by category for the "Trois savoir-faire" cards below
+// (CategoryShowcase.astro falls back to the colour placeholder on its own
+// if a category has no images yet).
+const imagesFor = (cat: Artwork['category']) =>
+  all.filter((a) => a.category === cat && a.imageUrl).map((a) => a.imageUrl as string);
+
+const showcaseImages = {
+  pottery: imagesFor('pottery'),
+  'stained-glass': imagesFor('stained-glass'),
+  'wire-sculpture': imagesFor('wire-sculpture'),
+};
 ---
 
 <BaseLayout title="Cherub Atelier — Accueil" lang="fr">
@@ -48,15 +62,15 @@ try {
     <h2 class="stitle">Une matière, un geste, une pièce</h2>
     <div class="cards3">
       <a class="ccard" href="/fr/galerie?category=pottery">
-        <div class="art-placeholder art-ceramique"></div>
+        <CategoryShowcase images={showcaseImages.pottery} category="pottery" />
         <div class="cb"><h3>Céramique</h3><p>Sculptures et poteries façonnées à la main — femmes, animaux, fleurs — émaillées en grès ou faïence.</p></div>
       </a>
       <a class="ccard" href="/fr/galerie?category=stained-glass">
-        <div class="art-placeholder art-vitrail"></div>
+        <CategoryShowcase images={showcaseImages["stained-glass"]} category="stained-glass" />
         <div class="cb"><h3>Vitrail</h3><p>Panneaux et suspensions en verre coloré, assemblés au cuivre (Tiffany) ou au plomb traditionnel.</p></div>
       </a>
       <a class="ccard" href="/fr/galerie?category=wire-sculpture">
-        <div class="art-placeholder art-fil"></div>
+        <CategoryShowcase images={showcaseImages["wire-sculpture"]} category="wire-sculpture" />
         <div class="cb"><h3>Fil de Fer</h3><p>Silhouettes et sculptures aériennes façonnées à partir de fil de fer recuit.</p></div>
       </a>
     </div>
@@ -147,7 +161,6 @@ try {
     transition: transform 0.2s, box-shadow 0.2s;
   }
   .ccard:hover { transform: translateY(-5px); box-shadow: 0 16px 34px rgba(143,87,52,.2); }
-  .art-placeholder { aspect-ratio: 4/3; }
   .ccard .cb { padding: 1.15rem 1.25rem 1.4rem; }
   .ccard h3 { font-size: 1.3rem; margin-bottom: 0.4rem; }
   .ccard p { font-size: 0.9rem; opacity: 0.8; }

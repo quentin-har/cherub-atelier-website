@@ -87,7 +87,3 @@ h1, h2, h3, h4 { font-family: var(--fhead); line-height: 1.15; }
   margin-bottom: 0.55rem;
 }
 
-/* ── Category colour tints (used on card art areas) ── */
-.art-ceramique { background: linear-gradient(140deg, #fde0c8, #f5cba8); }
-.art-vitrail   { background: linear-gradient(140deg, #d4eaf8, #b8d8f0); }
-.art-fil       { background: linear-gradient(140deg, #e8e8f0, #d8d8e8); }
