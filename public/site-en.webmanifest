@@ -1,0 +1,13 @@
+{
+  "name": "Cherub Atelier",
+  "short_name": "Cherub Atelier",
+  "lang": "en",
+  "start_url": "/en/",
+  "display": "standalone",
+  "background_color": "#f7f0e6",
+  "theme_color": "#b85c38",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
