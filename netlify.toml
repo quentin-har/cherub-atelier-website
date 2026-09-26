@@ -27,6 +27,18 @@
   status = 301
   force = true
 
+# www.cherub-atelier.fr already redirects to the primary domain automatically
+# (Netlify's own www<->apex pairing for the primary domain -- confirmed in the
+# dashboard, no rule needed here). www.cherub-atelier.com does NOT get that
+# treatment because it's an alias's www, not the primary's, so it needs its
+# own explicit rule here too, added once it's registered as a second alias
+# in Netlify (2026-09-26).
+[[redirects]]
+  from = "https://www.cherub-atelier.com/*"
+  to = "https://cherub-atelier.fr/:splat"
+  status = 301
+  force = true
+
 # Redirect root to French homepage
 [[redirects]]
   from = "/"
