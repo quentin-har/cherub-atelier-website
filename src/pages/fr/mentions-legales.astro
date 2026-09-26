@@ -1,8 +1,32 @@
 ---
-// Mentions légales — required by French law for any public website.
-// Stub version for launch. Phase 8: replace with mum's real details
-// (full name, contact@domain.fr, non-commercial statement).
+// Mentions légales — Phase 8-H (2026-09-26): mum publishes this site as a
+// non-professional individual (no SIRET, explicitly non-commercial), so
+// under LCEN article 6-III she can keep her full address/contact details
+// confidential (disclosed only to the host below) and show publicly just
+// the name of the "directeur de la publication". That name is personal
+// information, so it's NOT hardcoded here — this repo is public on
+// GitHub, and a name typed directly into this file would sit in git
+// history forever. It's fetched from Sanity instead (see legalNoticeQuery,
+// studio/schemaTypes/legalNotice.ts), the same pattern already used for
+// the About page bio. Falls back to the original generic placeholder if
+// the document doesn't exist yet or Sanity isn't configured, exactly like
+// the About page does, so this page never breaks or shows a blank name.
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { sanityClient } from '../../lib/sanity';
+import { legalNoticeQuery } from '../../lib/queries';
+
+interface LegalNotice {
+  directorName?: string;
+}
+
+let legal: LegalNotice | null = null;
+try {
+  legal = await sanityClient.fetch(legalNoticeQuery);
+} catch {
+  // Sanity not configured yet, or document doesn't exist — fall back below.
+}
+
+const directorName = legal?.directorName?.trim();
 ---
 
 <BaseLayout
@@ -15,10 +39,21 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <h1>Mentions légales</h1>
 
       <h2>Éditeur du site</h2>
-      <p>
-        Ce site est édité à titre personnel et non commercial.<br>
-        Les informations complètes seront ajoutées prochainement.
-      </p>
+      {directorName ? (
+        <p>
+          Ce site est édité à titre personnel et non commercial par {directorName}.<br>
+          Conformément à l'article 6-III de la loi n° 2004-575 du 21 juin 2004 pour la
+          confiance dans l'économie numérique (LCEN), les coordonnées complètes de
+          l'éditeur ne sont pas rendues publiques : elles ont été communiquées à
+          l'hébergeur ci-dessous et restent disponibles auprès de lui sur demande des
+          autorités judiciaires compétentes.
+        </p>
+      ) : (
+        <p>
+          Ce site est édité à titre personnel et non commercial.<br>
+          Les informations complètes seront ajoutées prochainement.
+        </p>
+      )}
 
       <h2>Hébergement</h2>
       <p>
@@ -39,8 +74,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <p>
         Pour toute demande, utilisez la <a href="/fr/contact">page Contact</a>.
       </p>
-
-      <!-- TODO Phase 8: add full name, address, SIRET if applicable, DMARC email -->
     </div>
   </section>
 </BaseLayout>

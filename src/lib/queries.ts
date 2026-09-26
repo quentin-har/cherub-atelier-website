@@ -82,3 +82,14 @@ export const aboutPageQuery = `
     "photoUrl": photo.asset->url
   }
 `;
+
+// The singleton legal-notice document (fixed document ID 'legalNotice',
+// see studio/schemaTypes/legalNotice.ts). Holds only the publication
+// director's name -- the one piece of the mentions légales that's
+// personal information and therefore kept out of this repo's git history,
+// fetched from Sanity at build time instead of hardcoded in the page.
+export const legalNoticeQuery = `
+  *[_id == "legalNotice"][0] {
+    directorName
+  }
+`;

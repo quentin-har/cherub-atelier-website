@@ -1,10 +1,25 @@
 ---
-// Legal notice — English mirror of fr/mentions-legales.astro. French law
-// requires the French version to exist (mentions légales); this English
-// one is provided for visitors who land on the English routes, and stays
-// in sync with the French stub until Phase 8-H replaces both with mum's
-// real details (full name, contact@domain.fr, non-commercial statement).
+// Legal notice — English mirror of fr/mentions-legales.astro (see that
+// file's comment for the full Phase 8-H rationale: mum publishes as a
+// non-professional individual under LCEN article 6-III, so the publisher
+// name is fetched from Sanity rather than hardcoded, keeping it out of
+// this public repo's git history).
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { sanityClient } from '../../lib/sanity';
+import { legalNoticeQuery } from '../../lib/queries';
+
+interface LegalNotice {
+  directorName?: string;
+}
+
+let legal: LegalNotice | null = null;
+try {
+  legal = await sanityClient.fetch(legalNoticeQuery);
+} catch {
+  // Sanity not configured yet, or document doesn't exist — fall back below.
+}
+
+const directorName = legal?.directorName?.trim();
 ---
 
 <BaseLayout
@@ -17,10 +32,21 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <h1>Legal notice</h1>
 
       <h2>Site publisher</h2>
-      <p>
-        This site is published on a personal, non-commercial basis.<br>
-        Full details will be added shortly.
-      </p>
+      {directorName ? (
+        <p>
+          This site is published on a personal, non-commercial basis by {directorName}.<br>
+          In accordance with Article 6-III of French law n° 2004-575 of 21 June 2004 on
+          confidence in the digital economy (LCEN), a non-professional publisher's full
+          contact details are not made public: they have been provided to the hosting
+          provider below and remain available to it upon request from the competent
+          judicial authorities.
+        </p>
+      ) : (
+        <p>
+          This site is published on a personal, non-commercial basis.<br>
+          Full details will be added shortly.
+        </p>
+      )}
 
       <h2>Hosting</h2>
       <p>
@@ -41,8 +67,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <p>
         For any inquiry, please use the <a href="/en/contact">Contact page</a>.
       </p>
-
-      <!-- TODO Phase 8-H: add full name, address, SIRET if applicable, DMARC email -->
     </div>
   </section>
 </BaseLayout>
