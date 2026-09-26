@@ -2,7 +2,12 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://cherub-atelier.netlify.app',
+  // Phase 8-I fix: this was still the pre-custom-domain Netlify subdomain,
+  // so every URL in the generated sitemap (and any future canonical tag)
+  // pointed at cherub-atelier.netlify.app instead of the real domain --
+  // exactly the kind of thing that confuses Google about which URL is
+  // canonical. Now matches the actual primary domain set in Phase 8-B.
+  site: 'https://cherub-atelier.fr',
 
   integrations: [sitemap()],
 
