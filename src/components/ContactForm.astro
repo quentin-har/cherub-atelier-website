@@ -6,11 +6,19 @@
 //   - form-name hidden input     → required for static site Netlify forms detection
 //   - required fields            → browser-side validation before submission
 // No server-side code, no database — submissions go straight to Netlify.
+//
+// action="/fr/merci" (Phase 8-C fix): without this, Netlify serves its own
+// generic, unstyled default success page after submission — it has no
+// access to this site's CSS at all, which is what looked broken/unstyled
+// to a visitor. Pointing action at a real page in this site (src/pages/fr/merci.astro,
+// wrapped in the normal BaseLayout) makes the confirmation page match the
+// rest of the site instead.
 ---
 
 <form
   name="contact"
   method="POST"
+  action="/fr/merci"
   data-netlify="true"
   data-netlify-honeypot="bot-field"
   class="contact-form"
