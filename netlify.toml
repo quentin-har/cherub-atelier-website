@@ -66,14 +66,18 @@
 #     fetch to Sanity or anywhere else, add that origin here deliberately.
 #   - form-action 'self': the contact form posts to the same origin
 #     (Netlify Forms intercepts it server-side).
+#   - manifest-src 'self': added 2026-09-26 alongside site.webmanifest --
+#     default-src 'none' blocks the manifest link just like everything
+#     else unless a directive explicitly allows it, and unlike a missing
+#     script or style this fails silently (no console error, the browser
+#     just quietly won't treat the site as installable).
 #   - default-src 'none': nothing is allowed unless explicitly listed
-#     above/below — the site uses no manifest, worker, iframe, media, or
-#     font files beyond system fonts, so none of those directives are
-#     needed yet.
+#     above/below — the site uses no worker, iframe, media, or font files
+#     beyond system fonts, so none of those directives are needed yet.
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: https://cdn.sanity.io; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+    Content-Security-Policy = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: https://cdn.sanity.io; font-src 'self'; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"

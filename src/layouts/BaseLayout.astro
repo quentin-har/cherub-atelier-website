@@ -44,6 +44,9 @@ const absoluteImage = image ? new URL(image, Astro.site).href : undefined;
     <link rel="canonical" href={canonicalURL.href} />
     <title>{title}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#b85c38" />
 
     <!-- Open Graph / social sharing previews -->
     <meta property="og:type" content="website" />
