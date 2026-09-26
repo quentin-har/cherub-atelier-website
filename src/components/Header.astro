@@ -1,9 +1,18 @@
 ---
 interface Props {
   lang: string;
+  // Equivalent URL of the current page in the other language -- always
+  // supplied by BaseLayout.astro (computed automatically for most pages,
+  // or passed through from the page itself for an artwork detail page,
+  // where the slug differs per language). See src/lib/i18n.ts.
+  altHref: string;
 }
 
-const { lang } = Astro.props;
+const { lang, altHref } = Astro.props;
+const otherLang = lang === 'fr' ? 'en' : 'fr';
+const toggleLabel = otherLang === 'fr' ? 'FR' : 'EN';
+const toggleAriaLabel = otherLang === 'fr' ? 'Voir en français' : 'View in English';
+
 const base = `/${lang}`;
 
 const links =
@@ -28,6 +37,15 @@ const isActive = (href: string) =>
 ---
 
 <header class="site-header">
+  <a
+    class="lang-toggle"
+    href={altHref}
+    hreflang={otherLang}
+    lang={otherLang}
+    aria-label={toggleAriaLabel}
+  >
+    {toggleLabel}
+  </a>
   <div class="brand-row">
     <a href={`${base}/`} class="brand">Cherub Atelier<span class="dot">.</span></a>
   </div>
@@ -46,6 +64,7 @@ const isActive = (href: string) =>
 
 <style>
   .site-header {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -53,6 +72,21 @@ const isActive = (href: string) =>
     padding: 1.6rem 1rem 1.2rem;
     background: radial-gradient(circle at 50% -20%, #f4dcc2, var(--bg) 70%);
   }
+  .lang-toggle {
+    position: absolute;
+    top: 1.1rem;
+    right: 1rem;
+    font-family: var(--fhead);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 0.3rem 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    opacity: 0.75;
+    transition: opacity 0.2s, background 0.2s;
+  }
+  .lang-toggle:hover { opacity: 1; background: var(--soft); }
   .brand {
     font-family: var(--fhead);
     font-size: 1.7rem;

@@ -8,6 +8,7 @@ interface Artwork {
   _id: string;
   title_fr: string;
   slug?: string;
+  slug_en?: string;
   category: 'pottery' | 'stained-glass' | 'wire-sculpture';
   description_fr?: string;
   imageUrl?: string;
@@ -88,6 +89,13 @@ const seoDescription = hasRealDescriptionFr
 const ogImage = artwork.imageUrl
   ? `${artwork.imageUrl}?w=1200&h=630&fit=crop&auto=format`
   : undefined;
+
+// Equivalent English page for the header's language toggle. English
+// detail pages are keyed by slug_en (falling back to slug, then _id) --
+// see pages/en/gallery/[slug].astro's getStaticPaths -- so this mirrors
+// that exact fallback chain rather than reusing the generic path-segment
+// swap in src/lib/i18n.ts, which has no way to know an artwork's slug_en.
+const altHref = `/en/gallery/${artwork.slug_en ?? artwork.slug ?? artwork._id}`;
 ---
 
 <BaseLayout
@@ -95,6 +103,7 @@ const ogImage = artwork.imageUrl
   description={seoDescription}
   lang="fr"
   image={ogImage}
+  altHref={altHref}
 >
   <section class="section wrap">
     <a class="back" href="/fr/galerie">&larr; Retour à la galerie</a>

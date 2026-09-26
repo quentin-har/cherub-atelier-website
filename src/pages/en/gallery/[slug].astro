@@ -99,6 +99,12 @@ const seoDescription = hasRealDescriptionEn
 const ogImage = artwork.imageUrl
   ? `${artwork.imageUrl}?w=1200&h=630&fit=crop&auto=format`
   : undefined;
+
+// Equivalent French page for the header's language toggle -- mirrors the
+// getStaticPaths fallback chain in pages/fr/galerie/[slug].astro (slug,
+// then _id) rather than the generic path-segment swap in src/lib/i18n.ts,
+// which has no way to know an artwork's French slug.
+const altHref = `/fr/galerie/${artwork.slug ?? artwork._id}`;
 ---
 
 <BaseLayout
@@ -106,6 +112,7 @@ const ogImage = artwork.imageUrl
   description={seoDescription}
   lang="en"
   image={ogImage}
+  altHref={altHref}
 >
   <section class="section wrap">
     <a class="back" href="/en/gallery">&larr; Back to the gallery</a>

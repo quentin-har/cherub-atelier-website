@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { getAltHref } from '../lib/i18n';
 
 interface Props {
   title: string;
@@ -12,6 +13,13 @@ interface Props {
   // (contact, mentions légales, merci) simply omit it rather than share a
   // generic placeholder that doesn't exist as a real asset.
   image?: string;
+  // Equivalent URL of this page in the other language, for the header's
+  // language toggle and the hreflang tags below. Optional: most pages have
+  // a fixed 1:1 path in both languages and this is computed automatically
+  // from the current URL (see src/lib/i18n.ts). An artwork detail page's
+  // slug differs per language (`slug` vs `slug_en`), so it computes its
+  // own from the artwork data it already fetched and passes it in here.
+  altHref?: string;
 }
 
 const {
@@ -19,7 +27,11 @@ const {
   description = 'Cherub Atelier — Céramique, Vitrail et Fil de Fer, fait main.',
   lang = 'fr',
   image,
+  altHref,
 } = Astro.props;
+
+const otherLang = lang === 'fr' ? 'en' : 'fr';
+const resolvedAltHref = altHref ?? getAltHref(Astro.url.pathname, lang);
 
 // SEO (2026-09-26): canonical tag built from Astro.site (the primary
 // cherub-atelier.fr domain, set in astro.config.mjs) plus the current
@@ -32,6 +44,7 @@ const {
 // attached. A canonical tag tells search engines which one to index
 // without needing every one of those individually locked down.
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const alternateURL = new URL(resolvedAltHref, Astro.site);
 const ogLocale = lang === 'fr' ? 'fr_FR' : 'en_US';
 const absoluteImage = image ? new URL(image, Astro.site).href : undefined;
 ---
@@ -42,6 +55,12 @@ const absoluteImage = image ? new URL(image, Astro.site).href : undefined;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL.href} />
+    <!-- Tells search engines the French and English pages are translations
+         of each other rather than duplicate/unrelated content, and lets
+         them serve the right one directly in results. Pairs with the
+         header's language toggle, which uses the same computed URL. -->
+    <link rel="alternate" hreflang={lang} href={canonicalURL.href} />
+    <link rel="alternate" hreflang={otherLang} href={alternateURL.href} />
     <title>{title}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -63,7 +82,7 @@ const absoluteImage = image ? new URL(image, Astro.site).href : undefined;
     {absoluteImage && <meta name="twitter:image" content={absoluteImage} />}
   </head>
   <body>
-    <Header lang={lang} />
+    <Header lang={lang} altHref={resolvedAltHref} />
     <main>
       <slot />
     </main>
