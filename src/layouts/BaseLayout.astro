@@ -20,6 +20,12 @@ interface Props {
   // slug differs per language (`slug` vs `slug_en`), so it computes its
   // own from the artwork data it already fetched and passes it in here.
   altHref?: string;
+  // True for the 404 pages: emits <meta name="robots" content="noindex"> and
+  // omits the canonical, hreflang and og:url tags. Those are computed from
+  // the current URL, which on a 404 page is /404/ (or /fr/404/, /en/404/),
+  // so they would advertise a page that must never be indexed or shared as
+  // the canonical version of anything.
+  noindex?: boolean;
 }
 
 const {
@@ -28,6 +34,7 @@ const {
   lang = 'fr',
   image,
   altHref,
+  noindex = false,
 } = Astro.props;
 
 const otherLang = lang === 'fr' ? 'en' : 'fr';
@@ -54,13 +61,20 @@ const absoluteImage = image ? new URL(image, Astro.site).href : undefined;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonicalURL.href} />
-    <!-- Tells search engines the French and English pages are translations
-         of each other rather than duplicate/unrelated content, and lets
-         them serve the right one directly in results. Pairs with the
-         header's language toggle, which uses the same computed URL. -->
-    <link rel="alternate" hreflang={lang} href={canonicalURL.href} />
-    <link rel="alternate" hreflang={otherLang} href={alternateURL.href} />
+    {noindex ? (
+      <meta name="robots" content="noindex" />
+    ) : (
+      <Fragment>
+        <link rel="canonical" href={canonicalURL.href} />
+        <!-- Tells search engines the French and English pages are
+             translations of each other rather than duplicate/unrelated
+             content, and lets them serve the right one directly in results.
+             Pairs with the header's language toggle, which uses the same
+             computed URL. -->
+        <link rel="alternate" hreflang={lang} href={canonicalURL.href} />
+        <link rel="alternate" hreflang={otherLang} href={alternateURL.href} />
+      </Fragment>
+    )}
     <title>{title}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -73,7 +87,7 @@ const absoluteImage = image ? new URL(image, Astro.site).href : undefined;
     <meta property="og:locale" content={ogLocale} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonicalURL.href} />
+    {!noindex && <meta property="og:url" content={canonicalURL.href} />}
     {absoluteImage && <meta property="og:image" content={absoluteImage} />}
 
     <meta name="twitter:card" content={absoluteImage ? 'summary_large_image' : 'summary'} />

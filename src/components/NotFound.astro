@@ -1,0 +1,71 @@
+---
+// Shared body of the custom 404 pages (src/pages/404.astro,
+// src/pages/fr/404.astro, src/pages/en/404.astro). Takes the language as a
+// prop because a 404 page has no URL-based way to know it.
+//
+// Security notes: the requested URL is never read or printed here (that
+// would be a reflected-XSS surface), there is no script, and no style=""
+// attribute (the CSP in netlify.toml has no 'unsafe-inline' for styles).
+interface Props {
+  lang: 'fr' | 'en';
+}
+
+const { lang } = Astro.props;
+
+const t = {
+  fr: {
+    eyebrow: 'Erreur 404',
+    title: "Oups, cette page s'est brisée",
+    text: "Elle n'existe plus, ou l'adresse contient une erreur. L'atelier, lui, est intact.",
+    home: "Retour à l'accueil",
+    homeHref: '/fr/',
+    gallery: 'Voir la galerie',
+    galleryHref: '/fr/galerie',
+  },
+  en: {
+    eyebrow: 'Error 404',
+    title: 'Oops, this page broke',
+    text: 'It no longer exists, or the address contains a typo. The studio itself is intact.',
+    home: 'Back to home',
+    homeHref: '/en/',
+    gallery: 'View the gallery',
+    galleryHref: '/en/gallery',
+  },
+}[lang];
+---
+
+<section class="section">
+  <div class="wrap center nf">
+    <svg class="vase" viewBox="0 0 120 140" aria-hidden="true">
+      <path
+        d="M45 10h30l-4 22c18 10 30 30 30 55 0 28-18 46-41 46s-41-18-41-46c0-25 12-45 30-55z"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="4"
+        stroke-linejoin="round"
+      />
+      <path
+        d="M62 32l-10 28 14 14-12 30"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+    <p class="eyebrow">{t.eyebrow}</p>
+    <h1>{t.title}</h1>
+    <p class="sub">{t.text}</p>
+    <div class="btn-row center">
+      <a class="btn" href={t.homeHref}>{t.home}</a>
+      <a class="btn ghost" href={t.galleryHref}>{t.gallery}</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .nf { max-width: 560px; margin: 0 auto; }
+  .vase { width: 7rem; color: var(--accent); margin-bottom: 1rem; }
+  h1 { font-size: clamp(1.9rem, 4.4vw, 2.7rem); margin: 0.4rem 0; }
+  .sub { opacity: 0.84; margin: 0.5rem 0 1.6rem; font-size: 0.95rem; }
+</style>

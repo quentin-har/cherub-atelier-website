@@ -16,7 +16,10 @@ export default defineConfig({
       // a stray "Merci !" / "Thank you" page showing up in results for a
       // query it was never meant to answer. Resolves the open, non-blocking
       // item noted in LAUNCH_CHECKLIST.md's Phase 8-I.
-      filter: (page) => !page.includes('/merci'),
+      // Also excludes the 404 pages (/404, /fr/404, /en/404): they return a
+      // real HTTP 404 and carry noindex, so listing them in the sitemap
+      // would send crawlers to a page that tells them it doesn't exist.
+      filter: (page) => !page.includes('/merci') && !page.includes('/404'),
     }),
   ],
 

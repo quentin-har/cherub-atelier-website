@@ -46,6 +46,26 @@
   status = 302
   force = true
 
+# Custom 404 pages, one per language. Netlify serves dist/404.html for any
+# unknown URL on its own (that is the root fallback, src/pages/404.astro),
+# but it has no idea about the /fr/ and /en/ folders -- without these two
+# rules a mistyped English URL would get the French page. A "404" status
+# on a redirect serves the target page's content with a real 404 status.
+# Deliberately NO force = true: without it Netlify only applies a rule when
+# no file exists at the requested path, so every real page and every
+# artwork detail page keeps winning over these catch-alls. Verify on every
+# Deploy Preview that /fr/, /fr/galerie and one artwork page still return
+# 200 after touching these rules.
+[[redirects]]
+  from = "/en/*"
+  to = "/en/404/"
+  status = 404
+
+[[redirects]]
+  from = "/fr/*"
+  to = "/fr/404/"
+  status = 404
+
 # Security headers — Phase 6
 #
 # CSP built from a full source audit (2026-09-19), not a generic template:
